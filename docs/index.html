@@ -226,7 +226,7 @@
     <div class="wrap">
       <div class="head">
         <h2>Baixar o Pastel.</h2>
-        <p>É grátis e vai continuar. Versão 0.1.0, beta.</p>
+        <p>É grátis e vai continuar. Versão <span id="ver">0.1.1</span>, beta.</p>
       </div>
       <div class="dl">
         <div class="card">
@@ -276,5 +276,11 @@
   </div>
 </footer>
 
+<script>
+// mostra a versão do último release (se o GitHub não responder, fica o texto de cima)
+fetch("https://api.github.com/repos/WamanaDev/pastel/releases/latest").then(function(r){return r.json()}).then(function(j){
+  if (j && j.tag_name) document.getElementById("ver").textContent = j.tag_name.replace(/^v/, "");
+}).catch(function(){});
+</script>
 </body>
 </html>

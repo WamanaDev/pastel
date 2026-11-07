@@ -1,0 +1,390 @@
+<title>Guia de Marca Pastel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700&display=swap">
+<style>
+/* Layout: guia de marca em coluna única de leitura, seções com grade de exemplos; o símbolo 2x2 abre a página e volta como unidade de medida. */
+:root {
+  --coral: #FF8FA3;
+  --peach: #FFC79A;
+  --lilac: #B9A6FF;
+  --mint: #8FE3C0;
+  --violet: #6C4DFF;
+  --ink: #2B2540;
+  --bg: #FFF9F5;
+  --surface: #FFFFFF;
+  --muted: #5E5873;
+  --line: rgba(43, 37, 64, 0.12);
+  --link: #6C4DFF;
+  --on-violet: #FFFFFF;
+  --chip: #F3EDFF;
+  --display: "Fredoka", "Segoe UI", system-ui, sans-serif;
+  --body: "Nunito", "Segoe UI", system-ui, sans-serif;
+  --radius: 20px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ink: #F4EEFF;
+    --bg: #1B1726;
+    --surface: #262033;
+    --muted: #BDB4D6;
+    --line: rgba(244, 238, 255, 0.14);
+    --link: #B9A6FF;
+    --chip: #2E2740;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #F4EEFF;
+  --bg: #1B1726;
+  --surface: #262033;
+  --muted: #BDB4D6;
+  --line: rgba(244, 238, 255, 0.14);
+  --link: #B9A6FF;
+  --chip: #2E2740;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.55;
+  padding-block: 0 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1040px; margin-inline: auto; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h1 { font-weight: 600; font-size: clamp(2.4rem, 6vw, 3.5rem); line-height: 1.08; }
+h2 { font-weight: 600; font-size: 1.9rem; line-height: 1.15; }
+h3 { font-weight: 500; font-size: 1.3rem; line-height: 1.2; }
+p { margin: 0; }
+.lead { font-size: 1.15rem; max-width: 62ch; color: var(--muted); }
+.eyebrow { font-weight: 700; font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+a { color: var(--link); }
+:focus-visible { outline: 3px solid var(--violet); outline-offset: 3px; border-radius: 6px; }
+
+header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 36px; padding-block: 56px 40px; }
+header.top svg { width: 148px; height: 148px; flex: none; }
+header.top .txt { display: grid; gap: 14px; flex: 1 1 320px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { background: var(--chip); border-radius: 999px; padding: 4px 12px; font-size: 0.85rem; font-weight: 600; }
+
+nav.toc { display: flex; flex-wrap: wrap; gap: 6px 18px; padding-block: 14px; border-block: 1px solid var(--line); margin-bottom: 8px; font-weight: 700; font-size: 0.92rem; }
+nav.toc a { text-decoration: none; }
+nav.toc a:hover { text-decoration: underline; }
+
+section { display: grid; gap: 24px; padding-top: 64px; }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.g4 { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; display: grid; gap: 10px; align-content: start; }
+.muted { color: var(--muted); }
+.small { font-size: 0.9rem; }
+
+/* cores */
+.sw { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); background: var(--surface); }
+.sw .chipc { height: 92px; display: flex; align-items: flex-end; padding: 10px 14px; font-weight: 700; color: var(--ink-fixed, #2B2540); }
+.sw .chipc.on-violet { color: #fff; }
+.sw .info { padding: 12px 14px 14px; display: grid; gap: 2px; font-size: 0.9rem; }
+.sw .info b { font-family: var(--display); font-weight: 500; font-size: 1.05rem; }
+.sw code, code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 0.85rem; }
+.bar { display: flex; height: 18px; border-radius: 999px; overflow: hidden; }
+.bar i { flex: 1; }
+
+/* tipografia */
+.type-spec { display: grid; gap: 4px; }
+.sample-display { font-family: var(--display); font-weight: 600; font-size: clamp(2.2rem, 5vw, 3.2rem); line-height: 1.1; }
+.sample-body { font-family: var(--body); font-size: 1.05rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.scroll { overflow-x: auto; }
+
+/* logo */
+.stage { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); display: grid; place-items: center; padding: 28px; min-height: 200px; position: relative; }
+.stage.dark { background: #1B1726; border-color: rgba(244,238,255,0.14); }
+.stage svg.sym { width: 120px; height: 120px; }
+.clear { position: relative; padding: 36px; border: 2px dashed var(--violet); border-radius: 18px; }
+.clear::after { content: "x"; position: absolute; top: 6px; left: 50%; transform: translateX(-50%); font-family: var(--display); color: var(--violet); font-weight: 600; font-size: 0.95rem; }
+.clear svg { display: block; width: 104px; height: 104px; }
+.sizes { display: flex; align-items: flex-end; gap: 20px; }
+.sizes figure { margin: 0; display: grid; gap: 6px; justify-items: center; font-size: 0.8rem; color: var(--muted); }
+.no { position: relative; }
+.no::after { content: ""; position: absolute; top: 10px; right: 10px; width: 22px; height: 22px; border-radius: 50%; background: #D8344F; }
+.no::before { content: "\00d7"; position: absolute; top: 10px; right: 10px; width: 22px; height: 22px; display: grid; place-items: center; color: #fff; font-weight: 800; line-height: 1; font-size: 18px; z-index: 1; }
+.no .cap { position: absolute; bottom: 10px; left: 14px; right: 14px; font-size: 0.82rem; font-weight: 700; color: var(--muted); }
+
+/* voz */
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.do, .dont { border-radius: 14px; padding: 14px 16px; font-size: 0.97rem; display: grid; gap: 4px; }
+.do { background: rgba(143, 227, 192, 0.28); }
+.dont { background: rgba(255, 143, 163, 0.22); }
+.do b, .dont b { font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.words { display: flex; flex-wrap: wrap; gap: 8px; }
+.words span { border-radius: 999px; padding: 5px 14px; font-weight: 600; font-size: 0.92rem; }
+.w-yes span { background: rgba(143, 227, 192, 0.35); }
+.w-no span { background: rgba(255, 143, 163, 0.28); text-decoration: line-through; text-decoration-thickness: 1.5px; }
+
+/* mensagens */
+.tagline { font-family: var(--display); font-weight: 600; font-size: clamp(2rem, 5.5vw, 3.4rem); line-height: 1.1; text-wrap: balance; }
+.btn { display: inline-block; background: var(--violet); color: var(--on-violet); font-weight: 700; padding: 12px 22px; border-radius: 14px; text-decoration: none; width: fit-content; }
+.hero-card { background: var(--surface); border: 1px solid var(--line); border-radius: 28px; padding: clamp(22px, 4vw, 40px); display: grid; gap: 18px; }
+
+/* app mock */
+.desk { border-radius: var(--radius); padding: 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 22px; align-items: center; background: linear-gradient(135deg, #8aa4ff 0%, #c7a3ff 45%, #ffb4c6 100%); color: #fff; }
+.folder-icon { width: 76px; height: 76px; border-radius: 18px; background: rgba(255,255,255,0.32); border: 1px solid rgba(255,255,255,0.5); backdrop-filter: blur(10px); display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 10px; }
+.folder-icon i { border-radius: 6px; display: block; }
+.popup { background: rgba(255,255,255,0.38); border: 1px solid rgba(255,255,255,0.55); backdrop-filter: blur(14px); border-radius: 22px; padding: 16px; display: grid; gap: 12px; color: #2B2540; }
+.popup .name { font-weight: 600; font-size: 0.9rem; text-align: center; }
+.popup .apps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.popup .apps i { aspect-ratio: 1; border-radius: 12px; display: block; }
+.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.checks li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; }
+.checks li::before { content: ""; width: 18px; height: 18px; border-radius: 6px; border: 2px solid var(--violet); margin-top: 3px; }
+footer { padding-top: 64px; color: var(--muted); font-size: 0.9rem; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+@media (max-width: 480px) { header.top svg { width: 104px; height: 104px; } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="pastel-sym" viewBox="0 0 512 512">
+      <rect x="8" y="8" width="496" height="496" rx="120" fill="#FFF9F5" stroke="#2B2540" stroke-opacity="0.12" stroke-width="4"/>
+      <rect x="64" y="64" width="188" height="188" rx="48" fill="#FF8FA3"/>
+      <rect x="260" y="64" width="188" height="188" rx="48" fill="#FFC79A"/>
+      <rect x="64" y="260" width="188" height="188" rx="48" fill="#B9A6FF"/>
+      <rect x="260" y="260" width="188" height="188" rx="48" fill="#8FE3C0"/>
+    </symbol>
+    <symbol id="pastel-sym-dark" viewBox="0 0 512 512">
+      <rect x="8" y="8" width="496" height="496" rx="120" fill="#1B1726" stroke="#F4EEFF" stroke-opacity="0.2" stroke-width="4"/>
+      <rect x="64" y="64" width="188" height="188" rx="48" fill="#FF8FA3"/>
+      <rect x="260" y="64" width="188" height="188" rx="48" fill="#FFC79A"/>
+      <rect x="64" y="260" width="188" height="188" rx="48" fill="#B9A6FF"/>
+      <rect x="260" y="260" width="188" height="188" rx="48" fill="#8FE3C0"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header class="top">
+    <svg viewBox="0 0 512 512" role="img" aria-label="Símbolo do Pastel"><use href="#pastel-sym"/></svg>
+    <div class="txt">
+      <span class="eyebrow">Guia de marca, versão essencial</span>
+      <h1>Pastel</h1>
+      <p class="lead">A pasta do celular, no seu PC. Este guia mostra como o Pastel se parece e como fala, para app, site e GitHub saírem com a mesma cara.</p>
+      <div class="meta">
+        <span class="chip">Windows</span>
+        <span class="chip">Grátis, doação opcional</span>
+        <span class="chip">pastel.app.br</span>
+        <span class="chip">Criado por Wictor Pamplona</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Seções">
+    <a href="#fundacao">Fundação</a>
+    <a href="#logo">Símbolo</a>
+    <a href="#cores">Cores</a>
+    <a href="#tipografia">Tipografia</a>
+    <a href="#voz">Voz</a>
+    <a href="#mensagens">Mensagens</a>
+    <a href="#uso">Em uso</a>
+    <a href="#nunca">Nunca</a>
+  </nav>
+
+  <section id="fundacao">
+    <h2>Fundação</h2>
+    <div class="grid g2">
+      <div class="card">
+        <span class="eyebrow">Posicionamento</span>
+        <p>Para quem tem a área de trabalho do Windows cheia de atalhos, o Pastel é o organizador que agrupa os apps em pastas como as do celular, porque cada pasta é um atalho de verdade que funciona como o Windows já funciona.</p>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Por que existe</span>
+        <p>O criador queria ícones na mesma grade de apps, sem cards enchendo a tela, com noção do que há dentro de cada grupo. Não achou nenhuma ferramenta viável e leve. Fez a sua.</p>
+      </div>
+    </div>
+    <div class="grid g4">
+      <div class="card"><h3>Simplicidade</h3><p class="small muted">Se pede manual, é simplificado ou sai.</p></div>
+      <div class="card"><h3>Respeito ao sistema</h3><p class="small muted">Atalhos reais, wallpaper intocado, tudo volta ao apagar.</p></div>
+      <div class="card"><h3>Beleza funcional</h3><p class="small muted">O visual existe para ajudar a achar o app certo.</p></div>
+      <div class="card"><h3>Leveza</h3><p class="small muted">Pouco peso e nenhuma assinatura.</p></div>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <span class="eyebrow">Público</span>
+        <p><b>Primeiro:</b> quem personaliza o PC (Wallpaper Engine, Rainmeter). <b>Depois:</b> qualquer usuário de Windows. <b>Fora:</b> Mac, Linux e quem mantém a área de trabalho vazia.</p>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Personalidade</span>
+        <div class="meta"><span class="chip">Organizado</span><span class="chip">Simples</span><span class="chip">Leve</span><span class="chip">Divertido</span><span class="chip">Vibrante</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="logo">
+    <h2>Símbolo</h2>
+    <p class="lead">Um quadrado de cantos bem arredondados com uma grade 2x2: coral e pêssego em cima, lilás e menta embaixo. Não há logotipo desenhado; o nome entra em texto, em Fredoka.</p>
+    <div class="grid g3">
+      <div class="stage"><svg class="sym" viewBox="0 0 512 512" role="img" aria-label="Símbolo sobre fundo claro"><use href="#pastel-sym"/></svg></div>
+      <div class="stage dark"><svg class="sym" viewBox="0 0 512 512" role="img" aria-label="Símbolo sobre fundo escuro"><use href="#pastel-sym-dark"/></svg></div>
+      <div class="stage"><div style="display:flex;align-items:center;gap:14px"><svg viewBox="0 0 512 512" width="64" height="64" role="img" aria-label="Símbolo"><use href="#pastel-sym"/></svg><span class="sample-display" style="font-size:2.4rem">Pastel</span></div></div>
+    </div>
+    <div class="grid g3">
+      <div class="card">
+        <h3>Espaço livre</h3>
+        <div class="clear" style="width:fit-content"><svg viewBox="0 0 512 512" role="img" aria-label="Espaço livre"><use href="#pastel-sym"/></svg></div>
+        <p class="small muted">Deixe ao redor metade da largura de um quadrado pequeno (x).</p>
+      </div>
+      <div class="card">
+        <h3>Tamanho mínimo</h3>
+        <div class="sizes">
+          <figure><svg viewBox="0 0 512 512" width="16" height="16" aria-label="16 px"><use href="#pastel-sym"/></svg>16</figure>
+          <figure><svg viewBox="0 0 512 512" width="32" height="32" aria-label="32 px"><use href="#pastel-sym"/></svg>32</figure>
+          <figure><svg viewBox="0 0 512 512" width="48" height="48" aria-label="48 px"><use href="#pastel-sym"/></svg>48</figure>
+          <figure><svg viewBox="0 0 512 512" width="96" height="96" aria-label="96 px"><use href="#pastel-sym"/></svg>96</figure>
+        </div>
+        <p class="small muted">Mínimo de 16 px na tela, sempre testado. Abaixo de 24 px, prefira a versão de uma cor.</p>
+      </div>
+      <div class="card">
+        <h3>Ícone do grupo no Windows</h3>
+        <p class="small muted">Não leva a paleta pastel. É translúcido, quadrado com cantos levemente arredondados e segue o tema e a cor de destaque do Windows.</p>
+      </div>
+    </div>
+    <h3>Nunca faça</h3>
+    <div class="grid g4">
+      <div class="stage no"><svg class="sym" style="transform:scaleX(1.5)" viewBox="0 0 512 512" aria-label="Símbolo esticado"><use href="#pastel-sym"/></svg><span class="cap">Esticar ou distorcer</span></div>
+      <div class="stage no"><svg class="sym" style="filter:drop-shadow(8px 10px 6px rgba(0,0,0,.55))" viewBox="0 0 512 512" aria-label="Símbolo com sombra"><use href="#pastel-sym"/></svg><span class="cap">Sombra pesada ou 3D</span></div>
+      <div class="stage no"><svg class="sym" viewBox="0 0 512 512" aria-label="Símbolo recolorido"><rect x="8" y="8" width="496" height="496" rx="120" fill="#FFF9F5" stroke="#2B2540" stroke-opacity="0.12" stroke-width="4"/><rect x="64" y="64" width="188" height="188" rx="48" fill="#1E5CFF"/><rect x="260" y="64" width="188" height="188" rx="48" fill="#1E5CFF"/><rect x="64" y="260" width="188" height="188" rx="48" fill="#1E5CFF"/><rect x="260" y="260" width="188" height="188" rx="48" fill="#1E5CFF"/></svg><span class="cap">Trocar cores ou usar azul corporativo</span></div>
+      <div class="stage no"><svg class="sym" viewBox="0 0 512 512" aria-label="Símbolo com letra W"><use href="#pastel-sym"/><text x="256" y="330" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="600" font-size="260" fill="#2B2540">W</text></svg><span class="cap">Colocar o “W” no símbolo</span></div>
+    </div>
+  </section>
+
+  <section id="cores">
+    <h2>Cores</h2>
+    <p class="lead">Quatro pastéis para a marca e um violeta para ação. Texto sobre pastel é sempre Tinta; branco só sobre Violeta.</p>
+    <div class="bar" aria-hidden="true"><i style="background:var(--coral)"></i><i style="background:var(--peach)"></i><i style="background:var(--lilac)"></i><i style="background:var(--mint)"></i><i style="background:var(--violet)"></i></div>
+    <div class="grid g4">
+      <div class="sw"><div class="chipc" style="background:#FF8FA3">Aa</div><div class="info"><b>Coral</b><code>#FF8FA3</code><span class="muted">255, 143, 163</span><span class="muted">Marca. Tinta sobre ela: 6,7:1</span></div></div>
+      <div class="sw"><div class="chipc" style="background:#FFC79A">Aa</div><div class="info"><b>Pêssego</b><code>#FFC79A</code><span class="muted">255, 199, 154</span><span class="muted">Marca. Tinta sobre ele: 9,6:1</span></div></div>
+      <div class="sw"><div class="chipc" style="background:#B9A6FF">Aa</div><div class="info"><b>Lilás</b><code>#B9A6FF</code><span class="muted">185, 166, 255</span><span class="muted">Marca. Tinta sobre ele: 6,9:1</span></div></div>
+      <div class="sw"><div class="chipc" style="background:#8FE3C0">Aa</div><div class="info"><b>Menta</b><code>#8FE3C0</code><span class="muted">143, 227, 192</span><span class="muted">Marca e sucesso. Tinta: 9,7:1</span></div></div>
+    </div>
+    <div class="grid g4">
+      <div class="sw"><div class="chipc on-violet" style="background:#6C4DFF">Aa</div><div class="info"><b>Violeta</b><code>#6C4DFF</code><span class="muted">108, 77, 255</span><span class="muted">Ação. Branco sobre ele: 5,1:1</span></div></div>
+      <div class="sw"><div class="chipc on-violet" style="background:#2B2540">Aa</div><div class="info"><b>Tinta</b><code>#2B2540</code><span class="muted">43, 37, 64</span><span class="muted">Texto no claro</span></div></div>
+      <div class="sw"><div class="chipc" style="background:#FFF9F5">Aa</div><div class="info"><b>Creme</b><code>#FFF9F5</code><span class="muted">255, 249, 245</span><span class="muted">Fundo no claro</span></div></div>
+      <div class="sw"><div class="chipc" style="background:#1B1726;color:#F4EEFF">Aa</div><div class="info"><b>Ameixa</b><code>#1B1726</code><span class="muted">27, 23, 38</span><span class="muted">Fundo no escuro. Névoa <code>#F4EEFF</code> sobre ela: 15,5:1</span></div></div>
+    </div>
+    <ul class="checks">
+      <li>No máximo duas cores pastel por tela, além do símbolo.</li>
+      <li>Violeta só para ação (botão, link, foco), nunca como fundo grande.</li>
+      <li>Evite preto puro, arco-íris completo e pastel sobre pastel sem separação.</li>
+    </ul>
+  </section>
+
+  <section id="tipografia">
+    <h2>Tipografia</h2>
+    <div class="grid g2">
+      <div class="card type-spec"><span class="eyebrow">Títulos e nome da marca</span><div class="sample-display">Fredoka</div><p class="small muted">Gratuita (Google Fonts). Pesos 500 e 600. Nunca em texto longo.</p></div>
+      <div class="card type-spec"><span class="eyebrow">Texto e interface</span><div class="sample-body"><b style="font-size:2.2rem;font-family:var(--body)">Nunito</b><br>Arraste um app para a pasta. Pronto.</div><p class="small muted">Gratuita (Google Fonts). Pesos 400, 600 e 700. Reserva: Quicksand ou Nunito Sans.</p></div>
+    </div>
+    <div class="card scroll">
+      <table>
+        <thead><tr><th>Nível</th><th>Fonte</th><th>Peso</th><th>Tamanho</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr><td>H1</td><td>Fredoka</td><td>600</td><td>40–56 px</td><td>Título da página</td></tr>
+          <tr><td>H2</td><td>Fredoka</td><td>500</td><td>24–28 px</td><td>Seção</td></tr>
+          <tr><td>H3</td><td>Nunito</td><td>700</td><td>18–20 px</td><td>Subseção</td></tr>
+          <tr><td>Corpo</td><td>Nunito</td><td>400</td><td>16 px</td><td>Texto corrido, entrelinha 1,5</td></tr>
+          <tr><td>Legenda</td><td>Nunito</td><td>400</td><td>13–14 px</td><td>Notas</td></tr>
+          <tr><td>Rótulo</td><td>Nunito</td><td>700</td><td>14 px</td><td>Botões e menus</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted">Sem Fredoka ou Nunito: <code>"Segoe UI", system-ui, sans-serif</code>. No app, use a fonte do sistema se Nunito não estiver embutida.</p>
+  </section>
+
+  <section id="voz">
+    <h2>Voz</h2>
+    <p class="tagline" style="font-size:clamp(1.5rem,3.5vw,2.1rem)">O Pastel soa como um amigo prestativo e bem-humorado que arruma sua bagunça sem fazer drama: direto, leve e honesto.</p>
+    <div class="grid g2">
+      <div class="card"><h3>Como fala</h3><p class="small">O Pastel em 3ª pessoa (“O Pastel arruma...”), nunca “eu” nem “nós”. “Você” com gíria leve (“tá”, “de boa”). Frases curtas. Humor leve e autodepreciativo, nunca às custas de quem usa. Exclamação rara.</p></div>
+      <div class="card"><h3>Emoji</h3><p class="small">Livre em site, README e redes. Nenhum dentro do app. Erros no app têm humor leve, sem emoji, e sempre dizem o próximo passo.</p></div>
+    </div>
+    <div class="pair">
+      <div class="do"><b>Faça</b>“Arraste um app para a pasta. Pronto.”</div>
+      <div class="dont"><b>Evite</b>“Utilize o recurso de arrastar e soltar para realizar a organização dos seus aplicativos.”</div>
+      <div class="do"><b>Faça</b>“Opa, tropecei aqui. Tenta de novo ou reinicia o Pastel.”</div>
+      <div class="dont"><b>Evite</b>“Erro 0x80070005: Acesso negado ao diretório de destino.”</div>
+      <div class="do"><b>Faça</b>“O Pastel é grátis e vai continuar. Se quiser dar um café pro Wictor, tem um Pix aqui.”</div>
+      <div class="dont"><b>Evite</b>“Faça uma doação agora para manter o projeto vivo!”</div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>Dizemos</h3><div class="words w-yes"><span>pasta</span><span>apps</span><span>bagunça</span><span>tela</span><span>arrastar</span><span>arrumar</span><span>pronto</span><span>tudo no lugar</span><span>de boa</span><span>celular</span><span>atalho</span><span>beta</span></div></div>
+      <div class="card"><h3>Não dizemos</h3><div class="words w-no"><span>grupo</span><span>aplicativos</span><span>solução</span><span>plataforma</span><span>ecossistema</span><span>funcionalidade</span><span>intuitivo</span><span>revolucionário</span><span>poderoso</span><span>gerenciamento</span></div></div>
+    </div>
+  </section>
+
+  <section id="mensagens">
+    <h2>Mensagens</h2>
+    <div class="hero-card">
+      <span class="eyebrow">Tagline</span>
+      <div class="tagline">A pasta do celular, no seu PC.</div>
+      <p class="lead">O Pastel junta seus apps em pastas na área de trabalho do Windows. Grátis, leve e sem encher a tela de cards.</p>
+      <a class="btn" href="#mensagens">Baixar grátis</a>
+    </div>
+    <div class="grid g4">
+      <div class="card"><h3>Você já sabe usar</h3><p class="small muted">Miniatura 2x2 e popup, como no celular.</p></div>
+      <div class="card"><h3>Cabe na sua tela, não toma conta dela</h3><p class="small muted">Um lugar na grade, sem cards, sem mexer no wallpaper.</p></div>
+      <div class="card"><h3>Funciona do jeito do Windows</h3><p class="small muted">Cada pasta é um atalho de verdade: renomeie, mova e apague pelo Explorer.</p></div>
+      <div class="card"><h3>Grátis, leve e honesto</h3><p class="small muted">Sem assinatura. Doação é opcional.</p></div>
+    </div>
+    <p class="small muted">Ainda sem confirmar, não afirmar em público: “sem conta e sem internet” e números de consumo de memória.</p>
+  </section>
+
+  <section id="uso">
+    <h2>A marca em uso</h2>
+    <div class="desk" aria-label="Exemplo de pasta e popup sobre um wallpaper">
+      <div style="display:grid;gap:8px;justify-items:center">
+        <div class="folder-icon" aria-hidden="true"><i style="background:#FF8FA3"></i><i style="background:#FFC79A"></i><i style="background:#B9A6FF"></i><i style="background:#8FE3C0"></i></div>
+        <span style="font-weight:700;font-size:.9rem;text-shadow:0 1px 3px rgba(0,0,0,.35)">Trabalho</span>
+      </div>
+      <div class="popup" aria-hidden="true">
+        <div class="name">Trabalho</div>
+        <div class="apps"><i style="background:#FF8FA3"></i><i style="background:#FFC79A"></i><i style="background:#B9A6FF"></i><i style="background:#8FE3C0"></i><i style="background:#FF8FA3"></i><i style="background:#B9A6FF"></i></div>
+      </div>
+    </div>
+    <p class="small muted">Ilustração com cores de exemplo. O ícone real da pasta mostra a miniatura dos apps e segue o tema do Windows; o popup é translúcido, de cantos arredondados.</p>
+    <div class="grid g3">
+      <div class="card"><h3>App</h3><p class="small muted">Símbolo em 16, 32, 48 e 256 px. Menus: “Nova pasta”, “Renomear pasta”, “Excluir pasta”, “Adicionar apps”. Sem emoji.</p></div>
+      <div class="card"><h3>Site</h3><p class="small muted">Fundo Creme (Ameixa no escuro), título em Fredoka, tagline na primeira dobra, GIF de antes e depois, botão Violeta “Baixar grátis”, link de doação discreto.</p></div>
+      <div class="card"><h3>GitHub</h3><p class="small muted">Capa 1280x640 com símbolo e tagline sobre Creme. Como usar em 3 passos, limitações conhecidas, origem do Wictor, apoio.</p></div>
+    </div>
+  </section>
+
+  <section id="nunca">
+    <h2>Checklist de “nunca”</h2>
+    <ul class="checks">
+      <li>Esticar, sombrear ou recolorir o símbolo.</li>
+      <li>Usar cores fora da paleta ou texto branco sobre pastel.</li>
+      <li>Usar fontes fora de Fredoka e Nunito (reserva: fonte do sistema).</li>
+      <li>Escrever “grupo” ou “aplicativos”: use “pasta” e “apps”.</li>
+      <li>Colocar emoji dentro do app.</li>
+      <li>Prometer desempenho, “sem conta” ou “sem internet” sem confirmar.</li>
+      <li>Pressionar por doação ou usar urgência falsa.</li>
+      <li>Encher a tela de cards ou widgets, o oposto do Pastel.</li>
+    </ul>
+  </section>
+
+  <footer>
+    Dono da marca: Wictor Pamplona (Wamana). Arquivos aprovados em <code>brand/</code> no repositório. Textos de origem em <code>.agents/brand-*.md</code>.
+  </footer>
+</div>

@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pastel – A pasta do celular, no seu PC</title>
+<meta name="description" content="O Pastel junta seus apps em pastas na área de trabalho, como no celular. Grátis, sem conta e sem internet. Para Windows e Linux (KDE).">
+<meta name="theme-color" content="#FFF9F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1B1726" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="Pastel – A pasta do celular, no seu PC">
+<meta property="og:description" content="Junte seus apps em pastas na área de trabalho. Grátis, sem conta, sem internet.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://wamanadev.github.io/pastel/">
+<meta property="og:image" content="https://wamanadev.github.io/pastel/img/balao-claro.png">
+<link rel="icon" href="img/pastel-symbol.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700&display=swap">
+<style>
+  :root {
+    --coral: #FF8FA3; --peach: #FFC79A; --lilac: #B9A6FF; --mint: #8FE3C0;
+    --violet: #6C4DFF; --on-violet: #FFFFFF;
+    --ink: #2B2540; --bg: #FFF9F5; --surface: #FFFFFF; --muted: #5E5873;
+    --line: rgba(43, 37, 64, 0.12); --chip: #F3EDFF; --link: #6C4DFF;
+    --display: "Fredoka", "Segoe UI", system-ui, sans-serif;
+    --body: "Nunito", "Segoe UI", system-ui, sans-serif;
+    --radius: 20px;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #F4EEFF; --bg: #1B1726; --surface: #262033; --muted: #BDB4D6;
+      --line: rgba(244, 238, 255, 0.14); --chip: #2E2740; --link: #B9A6FF;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.6; }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: var(--link); }
+  .wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 600; line-height: 1.1; margin: 0; }
+  h1 { font-size: clamp(40px, 7vw, 68px); letter-spacing: -0.01em; }
+  h2 { font-size: clamp(28px, 4vw, 40px); }
+  h3 { font-size: 21px; font-weight: 500; }
+  p { margin: 0; }
+
+  /* topo */
+  header.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 600; font-size: 22px; color: var(--ink); text-decoration: none; }
+  .brand img { width: 34px; height: 34px; }
+  nav.links { display: flex; align-items: center; gap: 22px; }
+  nav.links a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 15px; }
+  nav.links a:hover { color: var(--ink); }
+  nav.links .gh { padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink); }
+  @media (max-width: 720px) { nav.links a:not(.gh) { display: none; } }
+
+  /* botões */
+  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 14px; font: 700 16px var(--body); text-decoration: none; border: 1px solid transparent; cursor: pointer; }
+  .btn.primary { background: var(--violet); color: var(--on-violet); }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn.ghost:hover { background: var(--chip); }
+  .btn:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid var(--violet); outline-offset: 3px; }
+
+  /* herói */
+  .hero { padding: clamp(48px, 9vw, 104px) 0 clamp(40px, 7vw, 80px); }
+  .hero .grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(32px, 6vw, 72px); align-items: center; }
+  @media (max-width: 880px) { .hero .grid { grid-template-columns: 1fr; } }
+  .eyebrow { display: inline-block; padding: 6px 14px; border-radius: 999px; background: var(--chip); font-weight: 700; font-size: 14px; margin-bottom: 20px; }
+  .hero p.lead { font-size: clamp(18px, 2.2vw, 21px); color: var(--muted); margin-top: 22px; max-width: 34em; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+  .fine { margin-top: 16px; font-size: 14.5px; color: var(--muted); max-width: 36em; }
+  .hero figure { margin: 0; }
+  .shot { border-radius: var(--radius); }
+
+  /* seções */
+  section { padding: clamp(48px, 7vw, 88px) 0; }
+  .head { max-width: 40em; margin-bottom: 40px; }
+  .head p { color: var(--muted); margin-top: 14px; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; counter-reset: s; }
+  @media (max-width: 880px) { .steps { grid-template-columns: 1fr; } }
+  .step, .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; }
+  .step::before { counter-increment: s; content: counter(s); display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--violet); color: var(--on-violet); font: 600 20px var(--display); margin-bottom: 16px; }
+  .step p, .card p { color: var(--muted); margin-top: 8px; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 980px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 620px) { .cards { grid-template-columns: 1fr; } }
+  .card .dot { width: 14px; height: 14px; border-radius: 5px; background: var(--violet); margin-bottom: 16px; }
+
+  /* imagens */
+  .gallery { display: grid; gap: 28px; }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; }
+  @media (max-width: 880px) { .duo { grid-template-columns: 1fr; } }
+  figure { margin: 0; }
+  figcaption { margin-top: 12px; color: var(--muted); font-size: 15px; }
+  .frame { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; box-shadow: 0 18px 50px -28px rgba(43,37,64,.45); }
+  .frame img { border-radius: 12px; }
+  .dockbg { background: linear-gradient(135deg, #143A6B, #8A3A1E); border-radius: var(--radius); padding: 28px; display: grid; place-items: center; }
+  .dockbg img { max-width: 360px; }
+
+  /* baixar */
+  .dl { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 880px) { .dl { grid-template-columns: 1fr; } }
+  .dl .card { display: flex; flex-direction: column; gap: 14px; }
+  .dl .card ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 15.5px; }
+  .dl .card .btn { align-self: flex-start; margin-top: auto; }
+  .tag { display: inline-block; font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--chip); }
+  .note { margin-top: 22px; padding: 16px 20px; border-radius: 14px; background: var(--chip); font-size: 15.5px; }
+
+  /* perguntas */
+  details { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 0 22px; margin-bottom: 12px; }
+  summary { cursor: pointer; padding: 18px 0; font-weight: 700; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; font: 600 22px var(--display); color: var(--violet); }
+  details[open] summary::after { content: "–"; }
+  details p { padding: 0 0 20px; color: var(--muted); }
+
+  footer { border-top: 1px solid var(--line); padding: 36px 0 56px; color: var(--muted); font-size: 15px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; justify-content: space-between; align-items: center; }
+  footer a { color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="img/pastel-symbol.svg" alt="" width="34" height="34">Pastel</a>
+    <nav class="links" aria-label="Principal">
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#recursos">Recursos</a>
+      <a href="#baixar">Baixar</a>
+      <a href="#perguntas">Perguntas</a>
+      <a class="gh" href="https://github.com/WamanaDev/pastel">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap grid">
+      <div>
+        <span class="eyebrow">Beta &middot; Grátis &middot; Código aberto</span>
+        <h1>A pasta do celular, no seu PC.</h1>
+        <p class="lead">O Pastel junta seus apps em pastas na área de trabalho, do jeito que o celular faz. Arraste os atalhos pra dentro, dê dois cliques e pronto. Sem conta, sem internet, sem bagunça.</p>
+        <div class="cta">
+          <a class="btn primary" href="https://github.com/WamanaDev/pastel/releases/latest/download/Pastel-Setup.exe">Baixar para Windows</a>
+          <a class="btn ghost" href="https://github.com/WamanaDev/pastel/releases/latest/download/pastel-linux-x64.tar.gz">Baixar para Linux (KDE)</a>
+        </div>
+        <p class="fine">Windows 10 ou 11. O instalador tem 2 MB e só baixa o .NET se a sua máquina não tiver. O Pastel ainda tá em beta, então pode ter um bug ou outro escondido.</p>
+      </div>
+      <figure>
+        <picture>
+          <source srcset="img/balao-escuro.png" media="(prefers-color-scheme: dark)">
+          <img class="shot" src="img/balao-claro.png" width="504" height="412" alt="O balão de uma pasta aberto, com 12 apps em três linhas e os pontinhos de página embaixo.">
+        </picture>
+      </figure>
+    </div>
+  </div>
+
+  <section id="como-funciona">
+    <div class="wrap">
+      <div class="head">
+        <h2>Sua tela, arrumada.</h2>
+        <p>Três passos, e o Pastel não pede que você mude nenhum hábito.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><h3>Crie uma pasta</h3><p>Botão direito na área de trabalho, Pastel, Nova pasta. Ela vira um ícone com a miniatura dos apps de dentro.</p></div>
+        <div class="step"><h3>Arraste os apps</h3><p>Solte os atalhos no ícone. Eles saem da área de trabalho e ficam guardados na pasta. Quer um de volta? É só arrastar pra fora.</p></div>
+        <div class="step"><h3>Abra com dois cliques</h3><p>Um balão abre junto do ícone, com a ponta apontando pra ele. Passou de 12 apps? Vira página, como no Menu Iniciar.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="recursos">
+    <div class="wrap">
+      <div class="head">
+        <h2>Pouca coisa, bem feita.</h2>
+        <p>O Pastel faz uma tarefa e tenta fazer ela direito.</p>
+      </div>
+      <div class="cards">
+        <div class="card"><div class="dot"></div><h3>Balão com páginas</h3><p>Roda do mouse, setas do teclado ou os pontinhos. A troca de página desliza, e dá pra desligar as animações.</p></div>
+        <div class="card"><div class="dot"></div><h3>Flutuantes</h3><p>Barras de apps soltas na área de trabalho, encaixadas na grade de ícones. Com vidro ou sem fundo, com ou sem nome, e até efeito de dock: quanto mais perto do mouse, maior.</p></div>
+        <div class="card"><div class="dot"></div><h3>Botão direito em tudo</h3><p>Em qualquer arquivo, pasta ou atalho: Pastel, Enviar para pasta ou flutuante. Ou crie uma nova na hora.</p></div>
+        <div class="card"><div class="dot"></div><h3>Segue o seu tema</h3><p>Claro, escuro e a cor de destaque do seu sistema. Se preferir, o violeta do Pastel.</p></div>
+        <div class="card"><div class="dot"></div><h3>Ícones padronizados</h3><p>Quadrados arredondados e chapados, como no Android. Nada de ícone com borda esquisita no meio do balão.</p></div>
+        <div class="card"><div class="dot"></div><h3>Nada se perde</h3><p>O que sai da área de trabalho fica guardado e volta quando você quiser. Excluir uma pasta devolve tudo pro lugar.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head">
+        <h2>Do seu jeito.</h2>
+        <p>Cada flutuante tem tamanho, fundo, nome e efeito próprios. Tudo se ajusta na janela de configurações.</p>
+      </div>
+      <div class="gallery">
+        <div class="duo">
+          <figure>
+            <div class="dockbg"><img src="img/flutuantes.png" width="420" height="570" alt="Cinco barras flutuantes de apps: padrão com vidro, com um ícone em destaque, com efeito de aproximação, sem fundo e sem nome, e a versão mínima sem fundo."></div>
+            <figcaption>Flutuantes: padrão, destaque, &ldquo;quanto mais perto, maior&rdquo;, sem fundo e sem nome, e mínimo.</figcaption>
+          </figure>
+          <figure>
+            <div class="frame"><img src="img/config-flutuantes.png" width="904" height="601" loading="lazy" alt="A janela de configurações na página Flutuantes, com tamanho dos ícones, fundo, nome e efeito ao passar o mouse."></div>
+            <figcaption>A janela de configurações, no tema claro.</figcaption>
+          </figure>
+        </div>
+        <div class="duo">
+          <figure>
+            <div class="frame"><img src="img/config-pastas.png" width="904" height="601" loading="lazy" alt="A janela de configurações na página Pastas, com duas pastas e as ações abrir, renomear e excluir."></div>
+            <figcaption>Pastas: abrir, renomear, excluir e ver os apps de cada uma.</figcaption>
+          </figure>
+          <figure>
+            <div class="frame"><img src="img/config-aparencia.png" width="904" height="601" loading="lazy" alt="A janela de configurações na página Aparência, com tema, cor de destaque e animações."></div>
+            <figcaption>Aparência: tema, cor de destaque e animações.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="baixar">
+    <div class="wrap">
+      <div class="head">
+        <h2>Baixar o Pastel.</h2>
+        <p>É grátis e vai continuar. Versão 0.1.0, beta.</p>
+      </div>
+      <div class="dl">
+        <div class="card">
+          <span class="tag">Windows 10 e 11</span>
+          <h3>Instalador</h3>
+          <ul>
+            <li>2 MB. Ele confere se você tem o .NET 10 e, se não tiver, baixa só o que falta (cerca de 60 MB).</li>
+            <li>O Windows pode avisar &ldquo;editor desconhecido&rdquo;, porque o instalador ainda não é assinado. Clique em <strong>Mais informações</strong> e depois em <strong>Executar assim mesmo</strong>.</li>
+            <li>Para remover, é só desinstalar pelo Windows. Seus apps movidos ficam guardados.</li>
+          </ul>
+          <a class="btn primary" href="https://github.com/WamanaDev/pastel/releases/latest/download/Pastel-Setup.exe">Baixar Pastel-Setup.exe</a>
+        </div>
+        <div class="card">
+          <span class="tag">Linux &middot; KDE Plasma</span>
+          <h3>Pacote .tar.gz</h3>
+          <ul>
+            <li>Extraia e rode <code>./install.sh</code>. Não usa <code>sudo</code> e não mexe no sistema; <code>./uninstall.sh</code> remove tudo.</li>
+            <li><strong>Ainda sem teste num KDE de verdade.</strong> Foi provado num Ubuntu, mas o menu do Dolphin e a bandeja dependem do seu KDE. Se algo se comportar diferente, abra uma <a href="https://github.com/WamanaDev/pastel/issues">issue</a>.</li>
+            <li>Na sessão Wayland, o balão abre no meio da tela em vez de junto do ícone.</li>
+          </ul>
+          <a class="btn ghost" href="https://github.com/WamanaDev/pastel/releases/latest/download/pastel-linux-x64.tar.gz">Baixar pastel-linux-x64.tar.gz</a>
+        </div>
+      </div>
+      <p class="note">Quer conferir o que baixou? Cada versão traz o arquivo <a href="https://github.com/WamanaDev/pastel/releases/latest/download/SHA256SUMS.txt">SHA256SUMS.txt</a> com as impressões digitais.</p>
+    </div>
+  </section>
+
+  <section id="perguntas">
+    <div class="wrap">
+      <div class="head"><h2>Perguntas.</h2></div>
+      <details><summary>Preciso de conta ou de internet?</summary><p>Não. O Pastel funciona offline e não pede login. A única vez que a internet entra em cena é no instalador do Windows, e só se faltar o .NET 10.</p></details>
+      <details><summary>Quanto custa?</summary><p>Nada. O Pastel é grátis, o código é aberto (licença MIT) e vai continuar assim.</p></details>
+      <details><summary>Os meus atalhos somem?</summary><p>Não. Quando você solta um atalho numa pasta, ele sai da área de trabalho e fica guardado pelo Pastel. Remover da pasta, ou excluir a pasta, devolve o atalho pra área de trabalho.</p></details>
+      <details><summary>O Pastel aparece nos &ldquo;Recentes&rdquo; do Menu Iniciar?</summary><p>Ele pede ao Windows para não aparecer, e apaga as entradas que o Explorer criar mesmo assim, logo depois de você abrir uma pasta.</p></details>
+      <details><summary>O Pastel mexe no meu sistema?</summary><p>Só no seu usuário: ele registra o tipo de arquivo das pastas e os menus do botão direito (no Windows, em <code>HKCU</code>; no Linux, em arquivos <code>.desktop</code> na sua pasta). Nada é gravado no sistema, e a desinstalação remove tudo isso.</p></details>
+      <details><summary>Onde ficam os meus dados?</summary><p>No Windows, em <code>%AppData%\Pastel</code>. No Linux, em <code>~/.config/pastel</code> e <code>~/.local/share/pastel</code>.</p></details>
+      <details><summary>Por que o Windows avisou &ldquo;editor desconhecido&rdquo;?</summary><p>Porque o instalador ainda não tem uma assinatura digital, que custa caro para um projeto pequeno. O código está todo aberto no GitHub, e você pode conferir a impressão digital do arquivo no SHA256SUMS.txt.</p></details>
+      <details><summary>Achei um bug. E agora?</summary><p>O Pastel ainda tá em beta, então acontece. Abra uma <a href="https://github.com/WamanaDev/pastel/issues">issue no GitHub</a> contando o que aconteceu. Se der, anexe um print.</p></details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Feito por Wictor Pamplona. O Pastel é grátis e vai continuar.</span>
+    <span><a href="https://github.com/WamanaDev/pastel">Código no GitHub</a> &middot; <a href="https://github.com/WamanaDev/pastel/blob/main/LICENSE">Licença MIT</a> &middot; <a href="https://github.com/WamanaDev/pastel/releases">Versões</a></span>
+  </div>
+</footer>
+
+</body>
+</html>

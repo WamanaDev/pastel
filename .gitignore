@@ -1,0 +1,22 @@
+# Saídas de build
+bin/
+obj/
+**/bin/
+**/obj/
+linux/publish/
+linux/dist/
+installer/Output/
+publish/
+
+# Editor e ferramentas locais
+.vs/
+.vscode/
+*.user
+.claude/
+
+# Documentos internos de marca e de ferramentas (a pasta brand/ é pública)
+.agents/
+skills-lock.json
+
+# Arquivos do release (vão para a página de versões, não para o código)
+release/

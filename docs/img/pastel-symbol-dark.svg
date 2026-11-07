@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Pastel">
+  <rect x="8" y="8" width="496" height="496" rx="120" fill="#1B1726" stroke="#F4EEFF" stroke-opacity="0.12" stroke-width="4"/>
+  <rect x="64" y="64" width="188" height="188" rx="48" fill="#FF8FA3"/>
+  <rect x="260" y="64" width="188" height="188" rx="48" fill="#FFC79A"/>
+  <rect x="64" y="260" width="188" height="188" rx="48" fill="#B9A6FF"/>
+  <rect x="260" y="260" width="188" height="188" rx="48" fill="#8FE3C0"/>
+</svg>

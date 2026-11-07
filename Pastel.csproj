@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>Pastel</RootNamespace>
+    <AssemblyName>Pastel</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Pastel.ico</ApplicationIcon>
+    <Version>0.1.0</Version>
+    <Authors>Wictor Pamplona</Authors>
+    <Product>Pastel</Product>
+    <Description>A pasta do celular, no seu PC.</Description>
+    <Copyright>Copyright (c) 2026 Wictor Pamplona</Copyright>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <!-- DPI per-monitor é definido no app.manifest (necessário para WPF) -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+  </PropertyGroup>
+
+  <!-- Main próprio em Program.cs: App.xaml vira Page em vez de ApplicationDefinition -->
+  <!-- A versão Linux (Avalonia) mora em linux\ e tem projeto próprio: o SDK inclui subpastas sozinho, então exclui aqui. -->
+  <ItemGroup>
+    <Compile Remove="linux\**" />
+    <Page Remove="linux\**" />
+    <EmbeddedResource Remove="linux\**" />
+    <None Remove="linux\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Remove="App.xaml" />
+    <Page Include="App.xaml" />
+    <!-- o mesmo ícone do .exe, para a bandeja -->
+    <EmbeddedResource Include="Pastel.ico" LogicalName="Pastel.ico" />
+  </ItemGroup>
+
+</Project>

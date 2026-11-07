@@ -349,6 +349,16 @@ namespace Pastel
             _body.Children.Add(Ui.Card(_p, Ui.Row(_p, "Menu \"Pastel\" no botão direito", "Em qualquer arquivo ou pasta do Dolphin: enviar para uma pasta ou flutuante.",
                 Ui.Switch(_p, Cfg.SendToMenu, v => Controller.SetSendToMenu(v)))));
 
+            _body.Children.Add(Ui.Card(_p, Ui.Row(_p, "Avisar de versões novas", "Procura no GitHub, a cada 12 horas, se saiu uma versão nova. É a única vez que o Pastel usa a internet.",
+                Ui.Switch(_p, Cfg.CheckUpdates, v => { Cfg.CheckUpdates = v; ConfigStore.Save(); }))));
+
+            _body.Children.Add(Ui.Card(_p, Ui.Row(_p, "Procurar atualização", "Confere agora se há uma versão nova do Pastel.",
+                Ui.Button(_p, "Verificar", async () =>
+                {
+                    var msg = await Controller.CheckForUpdateAsync(manual: true);
+                    if (msg != null) Dialogs.Info("Pastel", msg);
+                }))));
+
             _body.Children.Add(Ui.Card(_p, Ui.Row(_p, "Pasta de dados", "Onde o Pastel guarda a configuração e os atalhos que saíram da área de trabalho.",
                 Ui.Button(_p, "Abrir", () => Controller.OpenDataFolder()))));
         }

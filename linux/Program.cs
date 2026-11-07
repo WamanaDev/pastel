@@ -21,7 +21,16 @@ namespace Pastel
             }
             if (args.Length > 0 && args[0] is "--version" or "-v")
             {
-                Console.WriteLine("Pastel para Linux 0.1.0");
+                Console.WriteLine($"Pastel para Linux {Updater.Current}");
+                return 0;
+            }
+            // Chamado pelo uninstall.sh, com o Pastel já fechado: devolve os atalhos e apaga as pastas e os dados.
+            if (args.Length > 0 && args[0] == "--uninstall-cleanup") return UninstallCleanup.Run();
+            // Só para os autotestes: lê um JSON de release e diz se há versão nova.
+            if (args.Length > 1 && args[0] == "--selftest-update")
+            {
+                var r = Updater.Parse(System.IO.File.ReadAllText(args[1]), Updater.Current);
+                Console.WriteLine(r == null ? "nenhuma" : r.Tag);
                 return 0;
             }
 

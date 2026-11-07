@@ -12,7 +12,9 @@ Baixe o pacote, extraia e rode:
 ```
 
 Ele copia o Pastel para `~/.local/share/pastel-app`, abre na bandeja e cria sozinho a entrada no menu de
-aplicativos e o menu do botão direito. Não usa `sudo` e não mexe em nada do sistema. Para remover: `./uninstall.sh`.
+aplicativos e o menu do botão direito. Não usa `sudo` e não mexe em nada do sistema. Para remover: `./uninstall.sh` (os atalhos das pastas voltam para a área de trabalho e as pastas e os dados do Pastel são apagados).
+
+**Atualização:** de tempos em tempos o Pastel consulta a página de versões do GitHub, avisa (notificação e item no menu da bandeja) e, se você aceitar, baixa o pacote, confere o SHA-256 e roda o `install.sh` dele. É a única conexão de rede do app e dá para desligar em Configurações > Geral.
 
 Gerar o pacote você mesmo (precisa do SDK do .NET 10):
 

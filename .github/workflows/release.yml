@@ -1,0 +1,103 @@
+# Publica o release sozinho quando a versão sobe.
+# Regra: quem sobe a versão no Pastel.csproj (dentro do PR) gera um release; PRs que não mexem na versão não geram.
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      publish: ${{ steps.v.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          win=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Pastel.csproj | head -1)
+          lin=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' linux/Pastel.Linux.csproj | head -1)
+          iss=$(sed -n 's:^#define AppVersion "\(.*\)"::p' installer/Pastel.iss | head -1)
+          if [ -z "$win" ] || [ "$win" != "$lin" ] || [ "$win" != "$iss" ]; then
+            echo "Versões diferentes (Windows=$win, Linux=$lin, instalador=$iss). Deixe as três iguais." >&2
+            exit 1
+          fi
+          echo "version=$win" >> "$GITHUB_OUTPUT"
+          if gh release view "v$win" >/dev/null 2>&1; then
+            echo "O release v$win já existe: nada a publicar."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  windows:
+    needs: detect
+    if: needs.detect.outputs.publish == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Compilar (autônomo, leva o .NET dentro)
+        shell: pwsh
+        run: dotnet publish Pastel.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false "-p:SatelliteResourceLanguages=en%3Bpt-BR" -o publish\win-x64-sc
+      - name: Instalador (Inno Setup)
+        shell: pwsh
+        run: |
+          if (-not (Get-Command ISCC -ErrorAction SilentlyContinue) -and -not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
+          $iscc = (Get-Command ISCC -ErrorAction SilentlyContinue).Source
+          if (-not $iscc) { $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" }
+          & $iscc installer\Pastel.iss
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: installer/Output/Pastel-Setup.exe
+
+  linux:
+    needs: detect
+    if: needs.detect.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Compilar (autônomo)
+        run: dotnet publish linux/Pastel.Linux.csproj -c Release -r linux-x64 --self-contained true -p:DebugType=None -o pastel-linux-x64
+      - name: Empacotar
+        run: |
+          cp linux/install.sh linux/uninstall.sh linux/README.md pastel-linux-x64/
+          chmod +x pastel-linux-x64/pastel pastel-linux-x64/install.sh pastel-linux-x64/uninstall.sh
+          tar czf pastel-linux-x64.tar.gz pastel-linux-x64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: pastel-linux-x64.tar.gz
+
+  release:
+    needs: [detect, windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Impressões digitais
+        working-directory: dist
+        run: sha256sum Pastel-Setup.exe pastel-linux-x64.tar.gz > SHA256SUMS.txt && cat SHA256SUMS.txt
+      - name: Criar o release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ needs.detect.outputs.version }}" dist/Pastel-Setup.exe dist/pastel-linux-x64.tar.gz dist/SHA256SUMS.txt \
+            --repo "${{ github.repository }}" --target "${{ github.sha }}" \
+            --title "Pastel ${{ needs.detect.outputs.version }} (beta)" --generate-notes

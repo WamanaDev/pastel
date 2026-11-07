@@ -12,5 +12,6 @@
 - [ ] A mudança tem um único objetivo (PR pequeno e focado)
 - [ ] O projeto compila sem erros nem avisos novos
 - [ ] Testei na prática, não só compilei
+- [ ] Se é `feat`/`fix`, subi a versão (Windows, Linux e instalador)
 - [ ] Atualizei README/docs, se necessário
 - [ ] Não incluí binários, segredos ou arquivos gerados (bin/, obj/, publish/)

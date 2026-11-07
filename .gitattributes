@@ -1,0 +1,2 @@
+# scripts de shell precisam de LF mesmo se clonados no Windows
+*.sh text eol=lf

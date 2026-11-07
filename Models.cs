@@ -66,6 +66,10 @@ namespace Pastel
         public bool Animations { get; set; } = true;
         /// <summary>Menu "Pastel > Enviar para" ao clicar com o botão direito em qualquer arquivo ou pasta.</summary>
         public bool SendToMenu { get; set; } = true;
+        /// <summary>Procura versões novas no GitHub (a única conexão de rede do Pastel).</summary>
+        public bool CheckUpdates { get; set; } = true;
+        /// <summary>Última versão que o usuário disse "agora não"; só volta a avisar quando sair outra.</summary>
+        public string SkippedVersion { get; set; } = "";
         public List<FolderModel> Folders { get; set; } = new();
         public List<FloatingModel> Floats { get; set; } = new();
     }

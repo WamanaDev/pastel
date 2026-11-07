@@ -42,6 +42,7 @@ namespace Pastel
             RefreshSendTo();
             foreach (var m in Cfg.Floats) OpenFloat(m);
             BuildTray();
+            StartUpdateChecks();
             StartWatcher();
             RefreshThemeIcons(); // o tema do Windows pode ter mudado com o Pastel fechado
             PurgeRecents();
@@ -554,6 +555,59 @@ namespace Pastel
                 ContextMenuStrip = menu
             };
             _tray.DoubleClick += (_, _) => ShowSettings();
+            _tray.BalloonTipClicked += (_, _) => { if (_pending != null) _ = OfferUpdateAsync(_pending); };
+        }
+
+        // ---------- atualização ----------
+
+        private Updater.Release? _pending;
+        private System.Windows.Forms.ToolStripItem? _updateItem;
+        private DispatcherTimer? _updateTimer;
+
+        /// <summary>Procura sozinho pouco depois de abrir e a cada 12 horas (se o usuário não desligou).</summary>
+        private void StartUpdateChecks()
+        {
+            _updateTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
+            _updateTimer.Tick += async (_, _) =>
+            {
+                _updateTimer!.Interval = TimeSpan.FromHours(12);
+                if (Cfg.CheckUpdates) await CheckForUpdateAsync(manual: false);
+            };
+            _updateTimer.Start();
+        }
+
+        /// <summary>Retorna a mensagem para o usuário quando a checagem foi pedida por ele.</summary>
+        public async System.Threading.Tasks.Task<string?> CheckForUpdateAsync(bool manual)
+        {
+            var (rel, ok) = await Updater.CheckAsync();
+            if (!ok) return manual ? "Não consegui falar com o GitHub agora. Tente de novo mais tarde." : null;
+            if (rel == null) return manual ? "Você já está na versão mais recente." : null;
+
+            _pending = rel;
+            if (_tray != null && _updateItem == null)
+            {
+                var item = new System.Windows.Forms.ToolStripMenuItem(
+                    $"Atualizar para {rel.Version.Major}.{rel.Version.Minor}.{rel.Version.Build}…", null,
+                    (_, _) => _ = OfferUpdateAsync(rel));
+                _tray.ContextMenuStrip!.Items.Insert(0, item);
+                _updateItem = item;
+            }
+            if (manual) { await OfferUpdateAsync(rel); return null; }
+            if (Cfg.SkippedVersion != rel.Tag)
+                _tray?.ShowBalloonTip(8000, "Pastel: versão nova", $"A versão {rel.Tag} está disponível. Clique para atualizar.",
+                    System.Windows.Forms.ToolTipIcon.Info);
+            return null;
+        }
+
+        private async System.Threading.Tasks.Task OfferUpdateAsync(Updater.Release rel)
+        {
+            var r = MessageBox.Show($"Tem uma versão nova do Pastel: {rel.Tag} (você está na {Updater.Current}).\n\nAtualizar agora? O Pastel fecha e abre de novo sozinho.",
+                "Pastel", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (r != MessageBoxResult.Yes) { Cfg.SkippedVersion = rel.Tag; ConfigStore.Save(); return; }
+
+            if (await Updater.DownloadAndRunAsync(rel)) { Shutdown(); return; }
+            MessageBox.Show("Não consegui baixar ou conferir a atualização, então não instalei nada. Tente de novo mais tarde.",
+                "Pastel", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
         private static System.Drawing.Icon LoadTrayIcon()

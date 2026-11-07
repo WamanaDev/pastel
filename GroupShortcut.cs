@@ -143,7 +143,11 @@ namespace Pastel
         {
             try
             {
-                Notify(created ? 0x00000002 /*CREATE*/ : 0x00002000 /*UPDATEITEM*/, path);
+                // Ao atualizar, o Explorer às vezes mantém o ícone antigo (testado na versão autônoma: pasta nova ficava
+                // com o quadrado vazio). Avisar que o item sumiu e voltou o faz reler o ícone.
+                if (!created) Notify(0x00000004 /*DELETE*/, path);
+                Notify(0x00000002 /*CREATE*/, path);
+                Notify(0x00002000 /*UPDATEITEM*/, path);
                 var fi = new SHFILEINFO();
                 SHGetFileInfo(path, 0, ref fi, (uint)Marshal.SizeOf(fi), 0x4000 /*SYSICONINDEX*/);
                 SHChangeNotifyIndex(0x00008000 /*UPDATEIMAGE*/, 0x0003 /*DWORD*/, (IntPtr)fi.iIcon, IntPtr.Zero);

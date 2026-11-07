@@ -88,6 +88,8 @@ As pastas não aparecem em "Recentes" do Menu Iniciar: o tipo de arquivo pede ao
 (`NoRecentDocs`), o Pastel fica fora dos apps mais usados (`NoStartPage`) e as entradas que o Explorer criar
 mesmo assim são apagadas logo depois de abrir.
 
+**Atualizações:** de tempos em tempos o Pastel consulta a página de versões do GitHub e avisa na bandeja se saiu uma nova. Se você aceitar, ele baixa o instalador, confere o SHA-256 e atualiza em silêncio. É a única conexão de rede do app e dá para desligar em Configurações > Geral.
+
 Os dados ficam em `%AppData%\Pastel` (`config.json` e os atalhos movidos, em `Grupos\`).
 
 ## Limitações conhecidas

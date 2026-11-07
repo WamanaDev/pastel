@@ -399,6 +399,16 @@ namespace Pastel
             Page.Children.Add(Card(Row("Menu \"Pastel > Enviar para\"", "Clique com o botão direito em qualquer arquivo ou pasta para mandar para uma pasta ou flutuante.",
                 Switch(Cfg.SendToMenu, v => TheApp.SetSendToMenu(v)))));
 
+            Page.Children.Add(Card(Row("Avisar de versões novas", "Procura no GitHub, a cada 12 horas, se saiu uma versão nova. É a única vez que o Pastel usa a internet.",
+                Switch(Cfg.CheckUpdates, v => { Cfg.CheckUpdates = v; ConfigStore.Save(); }))));
+
+            Page.Children.Add(Card(Row("Procurar atualização", "Confere agora se há uma versão nova do Pastel.",
+                Btn("Verificar", async () =>
+                {
+                    var msg = await TheApp.CheckForUpdateAsync(manual: true);
+                    if (msg != null) MessageBox.Show(msg, "Pastel", MessageBoxButton.OK, MessageBoxImage.Information);
+                }))));
+
             Page.Children.Add(Card(Row("Pasta de dados", "Onde o Pastel guarda a configuração e os atalhos que saíram da área de trabalho.",
                 Btn("Abrir", () => TheApp.OpenDataFolder()))));
         }

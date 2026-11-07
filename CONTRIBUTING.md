@@ -43,7 +43,7 @@ refactor: / chore: / build:
 ## Código
 - Siga o estilo do código ao redor (C#/.NET no Windows, `linux/` para KDE).
 - Não adicione dependências sem discutir antes em uma issue.
-- Sem telemetria, rede ou coleta de dados: o Pastel é offline e sem conta.
+- Sem telemetria nem coleta de dados: o Pastel funciona offline e sem conta. A única conexão de rede é a procura por versões novas no GitHub (`Updater.cs`), que o usuário pode desligar. Não adicione outras.
 
 ## Licença
 Ao contribuir, você concorda que sua contribuição será licenciada sob a [MIT](LICENSE).

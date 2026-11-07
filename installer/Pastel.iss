@@ -55,6 +55,8 @@ Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"; Parameters: "--s
 
 [Run]
 Filename: "{app}\{#AppExe}"; Parameters: "--register"; Flags: runhidden
+; atualização automática (instalação silenciosa): o Pastel volta para a bandeja sozinho
+Filename: "{app}\{#AppExe}"; Flags: nowait runasoriginaluser; Check: WizardSilent
 Filename: "{app}\{#AppExe}"; Parameters: "--settings"; Description: "Abrir o Pastel agora"; Flags: nowait postinstall skipifsilent
 
 [Registry]

@@ -24,7 +24,7 @@ jobs:
         run: |
           win=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Pastel.csproj | head -1)
           lin=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' linux/Pastel.Linux.csproj | head -1)
-          iss=$(sed -n 's:^#define AppVersion "\(.*\)"::p' installer/Pastel.iss | head -1)
+          iss=$(sed -n 's:^#define AppVersion "\(.*\)":\1:p' installer/Pastel.iss | head -1)
           if [ -z "$win" ] || [ "$win" != "$lin" ] || [ "$win" != "$iss" ]; then
             echo "Versões diferentes (Windows=$win, Linux=$lin, instalador=$iss). Deixe as três iguais." >&2
             exit 1

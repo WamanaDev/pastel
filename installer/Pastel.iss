@@ -7,7 +7,7 @@
 ; precisa instalar o .NET (que exigia administrador), instala só para o usuário atual, sem pedido de administrador.
 
 #define AppName "Pastel"
-#define AppVersion "0.1.0"
+#define AppVersion "0.1.1"
 #define AppPublisher "Wictor Pamplona"
 #define AppURL "https://github.com/WamanaDev/pastel"
 #define AppExe "Pastel.exe"

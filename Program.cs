@@ -19,6 +19,12 @@ namespace Pastel
         [STAThread]
         private static int Main(string[] args)
         {
+            // Chamado pelo desinstalador: devolve os atalhos, apaga as pastas e os dados. Sem janela.
+            if (args.Length > 0 && args[0] == "--uninstall-cleanup") return UninstallCleanup.Run();
+
+            // Chamado pelo instalador: fecha um Pastel antigo (que seguraria a instância única) e refaz os registros.
+            if (args.Length > 0 && args[0] == "--register") return UninstallCleanup.Register();
+
             using var mutex = new Mutex(true, "Pastel.SingleInstance", out bool created);
             if (!created)
             {
@@ -39,6 +45,57 @@ namespace Pastel
             var app = new App();
             app.InitializeComponent();
             app.Run();
+        }
+    }
+
+    /// <summary>Desinstalação: os atalhos voltam para a área de trabalho e o que o Pastel criou é apagado.</summary>
+    internal static class UninstallCleanup
+    {
+        private static void KillOthers()
+        {
+            int me = Environment.ProcessId;
+            foreach (var p in System.Diagnostics.Process.GetProcessesByName("Pastel"))
+            {
+                if (p.Id == me) continue;
+                try { p.Kill(); p.WaitForExit(3000); } catch { }
+            }
+        }
+
+        public static int Register()
+        {
+            try
+            {
+                KillOthers();
+                ConfigStore.Load();
+                ShellIntegration.RegisterGroupType();
+                if (ConfigStore.Current.DesktopMenu) ShellIntegration.Register();
+                ShellIntegration.RegisterSendTo(ConfigStore.Current.Folders, ConfigStore.Current.Floats);
+                return 0;
+            }
+            catch { return 1; }
+        }
+
+        public static int Run()
+        {
+            try
+            {
+                KillOthers(); // para ele não regravar nada
+
+                ConfigStore.Load();
+                var cfg = ConfigStore.Current;
+                foreach (var f in cfg.Folders)
+                {
+                    foreach (var item in f.Items) DesktopFiles.Restore(item);
+                    GroupShortcut.Delete(f); // apaga o .wfgroup da área de trabalho
+                }
+                foreach (var m in cfg.Floats)
+                    foreach (var item in m.Items) DesktopFiles.Restore(item);
+
+                // a pasta de dados (config e Grupos\) só sai depois de devolver os atalhos
+                try { Directory.Delete(ConfigStore.Dir, true); } catch { }
+                return 0;
+            }
+            catch { return 1; }
         }
     }
 

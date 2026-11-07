@@ -1,17 +1,16 @@
 ; Instalador do Pastel para Windows (Inno Setup 6).
-; Compilar:  ISCC installer\Pastel.iss   (depois de: dotnet publish -c Release -r win-x64 --self-contained false -o publish\win-x64)
+; Compilar:
+;   dotnet publish Pastel.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false "-p:SatelliteResourceLanguages=en%3Bpt-BR" -o publish\win-x64-sc
+;   ISCC installer\Pastel.iss
 ;
-; O Pastel precisa do ".NET 10 Desktop Runtime". Este instalador confere se ele já existe e, se não existir, baixa o
-; instalador oficial da Microsoft (só o runtime de área de trabalho, ~60 MB) e instala em silêncio. Quem já tem o
-; .NET 10 não baixa nada.
+; O app é AUTÔNOMO: leva o .NET dentro. Por isso o instalador não confere nem baixa nada, funciona offline e, como não
+; precisa instalar o .NET (que exigia administrador), instala só para o usuário atual, sem pedido de administrador.
 
 #define AppName "Pastel"
 #define AppVersion "0.1.0"
 #define AppPublisher "Wictor Pamplona"
 #define AppURL "https://github.com/WamanaDev/pastel"
 #define AppExe "Pastel.exe"
-; Sempre aponta para o runtime 10.0 mais recente da Microsoft
-#define RuntimeUrl "https://aka.ms/dotnet/10.0/windowsdesktop-runtime-win-x64.exe"
 
 [Setup]
 AppId={{B7E9D8C4-3A51-4F0B-9C27-5D1E6A8F2C90}
@@ -22,19 +21,20 @@ AppPublisher={#AppPublisher}
 AppPublisherURL={#AppURL}
 AppSupportURL={#AppURL}/issues
 AppUpdatesURL={#AppURL}/releases
+; sem administrador: instala em %LocalAppData%\Programs\Pastel (quem quiser pode escolher "para todos os usuários")
 DefaultDirName={autopf}\{#AppName}
+PrivilegesRequired=lowest
+PrivilegesRequiredOverridesAllowed=dialog
 DisableProgramGroupPage=yes
 OutputDir=Output
 OutputBaseFilename=Pastel-Setup
 SetupIconFile=..\Pastel.ico
 UninstallDisplayIcon={app}\{#AppExe}
-Compression=lzma2
+Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-; precisa de administrador para instalar o .NET (quando falta) e para a pasta Programas
-PrivilegesRequired=admin
 CloseApplications=force
 RestartApplications=no
 ShowLanguageDialog=no
@@ -46,7 +46,7 @@ VersionInfoDescription=Instalador do Pastel
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
 
 [Files]
-Source: "..\publish\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\publish\win-x64-sc\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
@@ -54,6 +54,7 @@ Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"; Parameters: "--settings"
 
 [Run]
+Filename: "{app}\{#AppExe}"; Parameters: "--register"; Flags: runhidden
 Filename: "{app}\{#AppExe}"; Parameters: "--settings"; Description: "Abrir o Pastel agora"; Flags: nowait postinstall skipifsilent
 
 [Registry]
@@ -70,88 +71,6 @@ Root: HKCU; Subkey: "Software\Classes\InternetShortcut\shell\Pastel.Enviar"; Fla
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueName: "Pastel"; Flags: dontcreatekey uninsdeletevalue
 
 [Code]
-var
-  DownloadPage: TDownloadWizardPage;
-
-// O .NET 10 Desktop Runtime existe? Confere a pasta onde o Pastel.exe o procura (é o que o "dotnet --list-runtimes"
-// lê; o SDK instala sem gravar no registro, então só o registro não bastaria) e, por garantia, o registro.
-function IsDesktopRuntime10Installed: Boolean;
-var
-  FindRec: TFindRec;
-  Names: TArrayOfString;
-  I: Integer;
-begin
-  Result := False;
-
-  if FindFirst(ExpandConstant('{commonpf64}\dotnet\shared\Microsoft.WindowsDesktop.App\10.*'), FindRec) then
-  begin
-    FindClose(FindRec);
-    Result := True;
-    Exit;
-  end;
-
-  if RegGetValueNames(HKLM64, 'SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App', Names) then
-    for I := 0 to GetArrayLength(Names) - 1 do
-      if Copy(Names[I], 1, 3) = '10.' then
-      begin
-        Result := True;
-        Exit;
-      end;
-end;
-
-function OnDownloadProgress(const Url, FileName: String; const Progress, ProgressMax: Int64): Boolean;
-begin
-  Result := True;
-end;
-
-procedure InitializeWizard;
-begin
-  DownloadPage := CreateDownloadPage(SetupMessage(msgWizardPreparing), SetupMessage(msgPreparingDesc), @OnDownloadProgress);
-end;
-
-function PrepareToInstall(var NeedsRestart: Boolean): String;
-var
-  ResultCode: Integer;
-begin
-  Result := '';
-  if IsDesktopRuntime10Installed then
-  begin
-    Log('.NET 10 Desktop Runtime ja instalado: nada a baixar.');
-    Exit;
-  end;
-
-  Log('.NET 10 Desktop Runtime nao encontrado: baixando o instalador oficial da Microsoft.');
-  DownloadPage.Clear;
-  DownloadPage.Add('{#RuntimeUrl}', 'windowsdesktop-runtime-win-x64.exe', '');
-  DownloadPage.Show;
-  try
-    try
-      DownloadPage.Download;
-    except
-      Result := 'Não consegui baixar o .NET 10, que o Pastel precisa. Confira a sua internet e rode este instalador de novo. ' +
-                'Se preferir, instale o ".NET Desktop Runtime 10" em dotnet.microsoft.com/download e depois rode este instalador.' + #13#10#13#10 +
-                '(' + GetExceptionMessage + ')';
-      Exit;
-    end;
-  finally
-    DownloadPage.Hide;
-  end;
-
-  // instala em silêncio; 0 = ok, 3010 = ok mas pede reiniciar, 1638 = já há uma versão igual ou mais nova
-  if not Exec(ExpandConstant('{tmp}\windowsdesktop-runtime-win-x64.exe'), '/install /quiet /norestart', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then
-  begin
-    Result := 'Não consegui abrir o instalador do .NET 10. Instale o ".NET Desktop Runtime 10" em dotnet.microsoft.com/download e rode este instalador de novo.';
-    Exit;
-  end;
-
-  if (ResultCode <> 0) and (ResultCode <> 3010) and (ResultCode <> 1638) then
-  begin
-    Result := 'A instalação do .NET 10 não terminou (código ' + IntToStr(ResultCode) + '). Instale o ".NET Desktop Runtime 10" em dotnet.microsoft.com/download e rode este instalador de novo.';
-    Exit;
-  end;
-  if ResultCode = 3010 then NeedsRestart := True;
-end;
-
 function InitializeUninstall: Boolean;
 begin
   // desinstalação silenciosa (ex.: pelo winget) não pode ficar presa numa pergunta
@@ -160,8 +79,16 @@ begin
     Result := True;
     Exit;
   end;
-  Result := MsgBox('As suas pastas do Pastel (os arquivos .wfgroup na área de trabalho) deixam de abrir.' + #13#10 +
-                   'Os atalhos que você levou para elas continuam guardados em %AppData%\Pastel\Grupos; ' +
-                   'se quiser que voltem para a área de trabalho, exclua cada pasta no Pastel antes de desinstalar.' + #13#10#13#10 +
-                   'Quer desinstalar mesmo assim?', mbConfirmation, MB_YESNO) = IDYES;
+  Result := MsgBox('Ao desinstalar, os atalhos que estão nas suas pastas e flutuantes voltam para a área de trabalho,' + #13#10 +
+                   'e as pastas do Pastel (arquivos .wfgroup) e as configurações são apagadas.' + #13#10#13#10 +
+                   'Quer desinstalar?', mbConfirmation, MB_YESNO) = IDYES;
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  Code: Integer;
+begin
+  // antes de apagar os arquivos: devolve os atalhos, apaga as pastas e os dados
+  if CurUninstallStep = usUninstall then
+    Exec(ExpandConstant('{app}\{#AppExe}'), '--uninstall-cleanup', '', SW_HIDE, ewWaitUntilTerminated, Code);
 end;

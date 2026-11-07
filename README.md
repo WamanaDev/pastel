@@ -54,8 +54,9 @@ dê dois cliques e um balão abre junto do ícone. Grátis, sem conta e sem inte
 ### Windows 10 e 11
 
 Baixe o `Pastel-Setup.exe` na [página de versões](https://github.com/WamanaDev/pastel/releases/latest) e execute.
-O instalador tem ~2 MB: ele confere se você tem o **.NET 10 Desktop Runtime** e, só se faltar, baixa o instalador oficial
-da Microsoft (~60 MB) e instala em silêncio.
+O instalador tem ~48 MB e já leva o .NET dentro: não baixa nada, funciona sem internet e não pede administrador
+(instala só para o seu usuário). Ao desinstalar, os atalhos que estavam nas pastas voltam para a área de trabalho e
+as pastas do Pastel são apagadas.
 
 O Windows pode avisar "editor desconhecido", porque o instalador ainda não é assinado digitalmente. Clique em
 **Mais informações** e depois em **Executar assim mesmo**. As impressões digitais estão no `SHA256SUMS.txt` de cada versão.
@@ -105,7 +106,7 @@ Os dados ficam em `%AppData%\Pastel` (`config.json` e os atalhos movidos, em `Gr
 
 ```
 dotnet run
-dotnet publish -c Release -r win-x64 --self-contained false -o publish\win-x64
+dotnet publish Pastel.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -o publish\win-x64-sc
 ```
 
 O instalador é feito com o [Inno Setup 6](https://jrsoftware.org/isinfo.php):

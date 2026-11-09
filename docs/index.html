@@ -100,6 +100,18 @@
   .dockbg { background: linear-gradient(135deg, #143A6B, #8A3A1E); border-radius: var(--radius); padding: 28px; display: grid; place-items: center; }
   .dockbg img { max-width: 360px; }
 
+  /* tutoriais */
+  .tut { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; margin-bottom: 56px; }
+  .tut.flip .tut-text { order: 2; }
+  @media (max-width: 880px) { .tut { grid-template-columns: 1fr; margin-bottom: 40px; } .tut.flip .tut-text { order: 0; } }
+  .tut h3 { font-size: 26px; }
+  .tut-text > p { color: var(--muted); margin-top: 10px; }
+  ol.how { list-style: none; counter-reset: h; margin: 20px 0 0; padding: 0; display: grid; gap: 12px; }
+  ol.how li { counter-increment: h; display: grid; grid-template-columns: 32px 1fr; gap: 12px; align-items: start; }
+  ol.how li::before { content: counter(h); display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: var(--violet); color: var(--on-violet); font: 600 17px var(--display); }
+  .tut-note { margin-top: 16px; font-size: 15px; color: var(--muted); }
+  .wide { margin-top: 28px; }
+
   /* baixar */
   .dl { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   @media (max-width: 880px) { .dl { grid-template-columns: 1fr; } }
@@ -130,6 +142,7 @@
     <a class="brand" href="#"><img src="img/pastel-symbol.svg" alt="" width="34" height="34">Pastel</a>
     <nav class="links" aria-label="Principal">
       <a href="#como-funciona">Como funciona</a>
+      <a href="#como-usar">Como usar</a>
       <a href="#recursos">Recursos</a>
       <a href="#baixar">Baixar</a>
       <a href="#perguntas">Perguntas</a>
@@ -174,6 +187,59 @@
     </div>
   </section>
 
+  <section id="como-usar">
+    <div class="wrap">
+      <div class="head">
+        <h2>Como usar.</h2>
+        <p>Duas coisas que facilitam o dia a dia, passo a passo. Valem para o Windows.</p>
+      </div>
+
+      <div class="tut">
+        <div class="tut-text">
+          <h3>Enviar para uma pasta, pelo botão direito</h3>
+          <p>Sem arrastar nada: mande um atalho, arquivo, programa ou pasta direto para uma pasta ou flutuante.</p>
+          <ol class="how">
+            <li><span>Clique com o botão direito no item. No Windows 11, escolha <strong>Mostrar mais opções</strong>.</span></li>
+            <li><span>Vá em <strong>Pastel</strong> e depois em <strong>Enviar para pasta</strong> (ou <strong>Enviar para flutuante</strong>).</span></li>
+            <li><span>Escolha a pasta, por exemplo <em>Jogos</em>. Para criar uma nova na hora, use <strong>Novo flutuante…</strong></span></li>
+            <li><span>Pronto. O item aparece dentro da pasta.</span></li>
+          </ol>
+        </div>
+        <figure>
+          <div class="frame"><img src="img/tutorial-enviar-para.gif" width="800" height="450" loading="lazy" alt="Botão direito num atalho da área de trabalho, Pastel, Enviar para pasta, Jogos: o atalho sai da área de trabalho e entra na pasta."></div>
+        </figure>
+      </div>
+
+      <div class="tut flip">
+        <div class="tut-text">
+          <h3>Esconder as pastas vazias</h3>
+          <p>Pasta sem nada dentro só ocupa espaço. Deixe o Pastel tirar ela do caminho.</p>
+          <ol class="how">
+            <li><span>Abra <strong>Configurações</strong> (botão direito na área de trabalho, Pastel) e vá na aba <strong>Geral</strong>.</span></li>
+            <li><span>Em <strong>Área de trabalho</strong>, ligue <strong>Ocultar pastas vazias</strong>.</span></li>
+            <li><span>As pastas sem itens somem da área de trabalho. Quando uma receber um item, ela volta sozinha.</span></li>
+            <li><span>Quer todas de volta? Desligue a opção.</span></li>
+          </ol>
+          <p class="tut-note">Pasta recém-criada fica visível até ganhar o primeiro item, e pasta espelhada (a que mostra uma pasta de verdade, como Downloads) nunca some.</p>
+        </div>
+        <figure>
+          <div class="frame"><img src="img/tutorial-ocultar-vazias.gif" width="800" height="450" loading="lazy" alt="Ligando a opção Ocultar pastas vazias: as pastas sem itens somem da área de trabalho e voltam quando recebem um atalho."></div>
+        </figure>
+      </div>
+
+      <div class="duo wide">
+        <figure>
+          <div class="frame"><img src="img/ilustra-so-atalhos.png" width="1200" height="630" loading="lazy" alt="Só atalhos são movidos para a pasta. Arquivo ou programa ganha um atalho na pasta e o original continua onde estava."></div>
+          <figcaption>Só atalhos são movidos. O resto ganha um atalho e o original fica onde está.</figcaption>
+        </figure>
+        <figure>
+          <div class="frame"><img src="img/config-geral.png" width="904" height="632" loading="lazy" alt="A aba Geral das configurações, com a opção Ocultar pastas vazias em Área de trabalho."></div>
+          <figcaption>Configurações, aba Geral.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
   <section id="recursos">
     <div class="wrap">
       <div class="head">
@@ -183,9 +249,10 @@
       <div class="cards">
         <div class="card"><div class="dot"></div><h3>Balão com páginas</h3><p>Roda do mouse, setas do teclado ou os pontinhos. A troca de página desliza, e dá pra desligar as animações.</p></div>
         <div class="card"><div class="dot"></div><h3>Flutuantes</h3><p>Barras de apps soltas na área de trabalho, encaixadas na grade de ícones. Com vidro ou sem fundo, com ou sem nome, e até efeito de dock: quanto mais perto do mouse, maior.</p></div>
-        <div class="card"><div class="dot"></div><h3>Botão direito em tudo</h3><p>Em qualquer arquivo, pasta ou atalho: Pastel, Enviar para pasta ou flutuante. Ou crie uma nova na hora.</p></div>
+        <div class="card"><div class="dot"></div><h3>Botão direito em tudo</h3><p>Em qualquer atalho, arquivo, programa ou pasta: Pastel, Enviar para pasta ou flutuante. Ou crie uma nova na hora.</p></div>
         <div class="card"><div class="dot"></div><h3>Segue o seu tema</h3><p>Claro, escuro e a cor de destaque do seu sistema. Se preferir, o violeta do Pastel.</p></div>
-        <div class="card"><div class="dot"></div><h3>Ícones padronizados</h3><p>Quadrados arredondados e chapados, como no Android. Nada de ícone com borda esquisita no meio do balão.</p></div>
+        <div class="card"><div class="dot"></div><h3>Ícones padronizados</h3><p>Quadrados arredondados e chapados, como no Android. Ícone pequeno ou com margem, como os de jogos da Steam, preenche o quadrado todo.</p></div>
+        <div class="card"><div class="dot"></div><h3>Pastas vazias somem</h3><p>Opcional: a pasta sem itens sai da área de trabalho e volta sozinha quando recebe um. Em Configurações, Geral.</p></div>
         <div class="card"><div class="dot"></div><h3>Nada se perde</h3><p>O que sai da área de trabalho fica guardado e volta quando você quiser. Excluir uma pasta devolve tudo pro lugar.</p></div>
       </div>
     </div>
@@ -226,7 +293,7 @@
     <div class="wrap">
       <div class="head">
         <h2>Baixar o Pastel.</h2>
-        <p>É grátis e vai continuar. Versão 0.1.0, beta.</p>
+        <p>É grátis e vai continuar. Versão 0.1.2, beta.</p>
       </div>
       <div class="dl">
         <div class="card">
@@ -257,6 +324,9 @@
   <section id="perguntas">
     <div class="wrap">
       <div class="head"><h2>Perguntas.</h2></div>
+      <details><summary>Por que o arquivo não some da área de trabalho?</summary><p>Só atalhos (<code>.lnk</code> e <code>.url</code>) são movidos para a pasta. Quando você envia um arquivo, programa ou pasta, o Pastel cria um atalho dentro da pasta e deixa o original onde está, para não mexer no que é seu. Se quiser tirá-lo da área de trabalho, mova ou apague por conta própria.</p></details>
+      <details><summary>Minha pasta sumiu. Onde está?</summary><p>Provavelmente a opção <strong>Ocultar pastas vazias</strong> está ligada (Configurações, Geral). A pasta sem itens sai da área de trabalho e volta sozinha quando recebe um. Para ver todas agora, desligue a opção. Nada é apagado: o arquivo da pasta fica guardado em <code>%AppData%\Pastel\Ocultas</code>.</p></details>
+      <details><summary>Não acho o menu do Pastel no botão direito.</summary><p>No Windows 11, ele fica em <strong>Mostrar mais opções</strong>, porque o menu novo do Explorer não aceita itens de terceiros. No Windows 10 já aparece direto.</p></details>
       <details><summary>Preciso de conta ou de internet?</summary><p>Não. O Pastel funciona offline e não pede login. Por padrão ele consulta o GitHub de tempos em tempos só para avisar de versões novas (nada seu é enviado), e você pode desligar isso em Configurações > Geral. Nem o instalador do Windows precisa: ele já leva tudo o que o app usa.</p></details>
       <details><summary>Quanto custa?</summary><p>Nada. O Pastel é grátis, o código é aberto (licença MIT) e vai continuar assim.</p></details>
       <details><summary>Os meus atalhos somem?</summary><p>Não. Quando você solta um atalho numa pasta, ele sai da área de trabalho e fica guardado pelo Pastel. Remover da pasta, ou excluir a pasta, devolve o atalho pra área de trabalho.</p></details>

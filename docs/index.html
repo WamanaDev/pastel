@@ -71,6 +71,8 @@
   .eyebrow { display: inline-block; padding: 6px 14px; border-radius: 999px; background: var(--chip); font-weight: 700; font-size: 14px; margin-bottom: 20px; }
   .hero p.lead { font-size: clamp(18px, 2.2vw, 21px); color: var(--muted); margin-top: 22px; max-width: 34em; }
   .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+  .dl-count { margin-top: 14px; font-size: 15px; font-weight: 600; color: var(--muted); }
+  .dl-count span { color: var(--ink); }
   .fine { margin-top: 16px; font-size: 14.5px; color: var(--muted); max-width: 36em; }
   .hero figure { margin: 0; }
   .shot { border-radius: var(--radius); }
@@ -162,6 +164,7 @@
           <a class="btn primary" href="https://github.com/WamanaDev/pastel/releases/latest/download/Pastel-Setup.exe">Baixar para Windows</a>
           <a class="btn ghost" href="https://github.com/WamanaDev/pastel/releases/latest/download/pastel-linux-x64.tar.gz">Baixar para Linux (KDE)</a>
         </div>
+        <p class="dl-count" id="dl-count" hidden><span id="dl-num"></span> downloads até agora</p>
         <p class="fine">Windows 10 ou 11. O instalador tem 48 MB, já leva tudo dentro, não pede administrador e funciona sem internet. O Pastel ainda tá em beta, então pode ter um bug ou outro escondido.</p>
       </div>
       <figure>
@@ -346,5 +349,30 @@
   </div>
 </footer>
 
+<script>
+  // Contador de downloads: soma os downloads dos arquivos de todas as versões, direto da API pública do GitHub.
+  // Se a consulta falhar, o contador simplesmente não aparece.
+  (function () {
+    var box = document.getElementById("dl-count"), num = document.getElementById("dl-num");
+    if (!box || !num || !window.fetch) return;
+    function show(total) {
+      if (!(total > 0)) return;
+      num.textContent = new Intl.NumberFormat("pt-BR").format(total);
+      box.hidden = false;
+    }
+    var cached = null;
+    try { cached = JSON.parse(sessionStorage.getItem("pastel-dl") || "null"); } catch (e) {}
+    if (cached && Date.now() - cached.t < 3600000) { show(cached.n); return; }
+    fetch("https://api.github.com/repos/WamanaDev/pastel/releases?per_page=100", { headers: { Accept: "application/vnd.github+json" } })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function (list) {
+        var n = 0;
+        list.forEach(function (rel) { (rel.assets || []).forEach(function (a) { n += a.download_count || 0; }); });
+        try { sessionStorage.setItem("pastel-dl", JSON.stringify({ t: Date.now(), n: n })); } catch (e) {}
+        show(n);
+      })
+      .catch(function () {});
+  })();
+</script>
 </body>
 </html>

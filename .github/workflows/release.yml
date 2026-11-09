@@ -1,5 +1,5 @@
 # Publica o release sozinho quando a versão sobe.
-# Regra: quem sobe a versão no Pastel.csproj (dentro do PR) gera um release; PRs que não mexem na versão não geram.
+# Regra: quem sobe a versão no windows/Pastel.csproj (dentro do PR) gera um release; PRs que não mexem na versão não geram.
 name: Release
 
 on:
@@ -22,7 +22,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          win=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Pastel.csproj | head -1)
+          win=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' windows/Pastel.csproj | head -1)
           lin=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' linux/Pastel.Linux.csproj | head -1)
           iss=$(sed -n 's:^#define AppVersion "\(.*\)":\1:p' installer/Pastel.iss | head -1)
           if [ -z "$win" ] || [ "$win" != "$lin" ] || [ "$win" != "$iss" ]; then
@@ -48,7 +48,7 @@ jobs:
           dotnet-version: 10.0.x
       - name: Compilar (autônomo, leva o .NET dentro)
         shell: pwsh
-        run: dotnet publish Pastel.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false "-p:SatelliteResourceLanguages=en%3Bpt-BR" -o publish\win-x64-sc
+        run: dotnet publish windows/Pastel.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false "-p:SatelliteResourceLanguages=en%3Bpt-BR" -o publish\win-x64-sc
       - name: Instalador (Inno Setup)
         shell: pwsh
         run: |

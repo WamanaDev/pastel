@@ -158,6 +158,22 @@ namespace Pastel
             return (big ?? list.OrderByDescending(e => e.Size).First()).Path;
         }
 
+        /// <summary>Outras versões do mesmo ícone (mesmo nome em outros tamanhos/temas): SVG primeiro, depois PNG do maior para o menor.
+        /// Serve para trocar um PNG minúsculo (ou com margem enorme) por uma versão maior.</summary>
+        public static List<string> Alternatives(string file)
+        {
+            var result = new List<string>();
+            try
+            {
+                lock (Gate) { if (_index == null) BuildIndex(); }
+                if (_index!.TryGetValue(Path.GetFileNameWithoutExtension(file), out var list))
+                    result.AddRange(list.Where(e => !string.Equals(e.Path, file, StringComparison.Ordinal))
+                        .OrderByDescending(e => e.Svg).ThenByDescending(e => e.Size).Select(e => e.Path));
+            }
+            catch { }
+            return result;
+        }
+
         /// <summary>O ícone de um item da pasta: do .desktop, do próprio arquivo de imagem, ou um genérico.</summary>
         public static string? ResolveForItem(ShortcutItem item)
         {

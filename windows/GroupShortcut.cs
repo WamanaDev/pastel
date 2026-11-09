@@ -105,13 +105,75 @@ namespace Pastel
                 return ok;
             }
 
+            if (f.LnkPath != null && !File.Exists(f.LnkPath) && IsStashed(f))
+            {
+                SyncHidden(f); // pasta vazia guardada fora da área de trabalho: volta só se já não deve ficar oculta
+                if (IsStashed(f))
+                {
+                    if (force) WriteReplacing(StashPath(f), BuildIcon(f)); // mantém o ícone (tema) em dia
+                    return true;
+                }
+            }
+
             bool exists = f.LnkPath != null && File.Exists(f.LnkPath);
-            if (exists && !force && string.Equals(ReadId(f.LnkPath!), f.Id, StringComparison.OrdinalIgnoreCase)) return true;
+            if (exists && !force && string.Equals(ReadId(f.LnkPath!), f.Id, StringComparison.OrdinalIgnoreCase)) { SyncHidden(f); return true; }
             if (!exists) f.LnkPath = NewPath(f.Name);
 
             if (!WriteReplacing(f.LnkPath!, BuildIcon(f))) return false;
             RefreshShell(f.LnkPath!, created: !exists);
+            SyncHidden(f); // o arquivo novo nasce sem o atributo Oculto
             return true;
+        }
+
+        // ---------- ocultar pastas vazias ----------
+
+        /// <summary>Id da pasta com o balão aberto (sendo editada): nunca é ocultada enquanto isso.</summary>
+        public static string? EditingId;
+
+        /// <summary>Onde o arquivo da pasta fica guardado enquanto ela está oculta (fora da área de trabalho).</summary>
+        public static string StashPath(FolderModel f) => Path.Combine(ConfigStore.Dir, "Ocultas", f.Id + Ext);
+
+        public static bool IsStashed(FolderModel f) => File.Exists(StashPath(f));
+
+        /// <summary>
+        /// Aplica a opção "Ocultar pastas vazias" a uma pasta: quando está vazia (e não é recém-criada), o arquivo sai da
+        /// área de trabalho e fica guardado em Ocultas\ dentro dos dados do Pastel; ao receber itens (ou desligar a opção)
+        /// volta ao mesmo lugar. Não depende do "mostrar arquivos ocultos" do Explorer. f.LnkPath continua sendo o lugar
+        /// de origem na área de trabalho.
+        /// </summary>
+        public static void SyncHidden(FolderModel f)
+        {
+            if (f.Items.Count > 0) f.Fresh = false;
+            if (f.LnkPath == null || IsLegacyLnk(f.LnkPath)) return;
+            try
+            {
+                bool want = ConfigStore.Current.HideEmptyFolders && !f.Fresh && f.Items.Count == 0
+                            && !f.IsMirror && !string.Equals(EditingId, f.Id, StringComparison.OrdinalIgnoreCase);
+                string stash = StashPath(f);
+                bool stashed = File.Exists(stash), onDesk = File.Exists(f.LnkPath);
+
+                if (onDesk)
+                {
+                    // Versão anterior só marcava o arquivo como Oculto (aparecia com "mostrar arquivos ocultos"): desfaz.
+                    var attrs = File.GetAttributes(f.LnkPath);
+                    if (attrs.HasFlag(FileAttributes.Hidden)) File.SetAttributes(f.LnkPath, attrs & ~FileAttributes.Hidden);
+                }
+
+                if (want && onDesk && !stashed)
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(stash)!);
+                    File.Move(f.LnkPath, stash, overwrite: true);
+                    Notify(0x00000004 /*DELETE*/, f.LnkPath);
+                    Notify(0x00001000 /*UPDATEDIR*/, DesktopFiles.UserDesktop);
+                }
+                else if (!want && stashed && !onDesk)
+                {
+                    File.Move(stash, f.LnkPath);
+                    Notify(0x00000002 /*CREATE*/, f.LnkPath);
+                    Notify(0x00001000 /*UPDATEDIR*/, DesktopFiles.UserDesktop);
+                }
+            }
+            catch { }
         }
 
         /// <summary>
@@ -174,6 +236,13 @@ namespace Pastel
 
         public static void Rename(FolderModel f, string newName)
         {
+            if (f.LnkPath != null && IsStashed(f) && !File.Exists(f.LnkPath))
+            {
+                // Guardada (oculta): só o nome de origem muda; o arquivo continua em Ocultas\.
+                f.LnkPath = NewPath(newName);
+                f.Name = Path.GetFileNameWithoutExtension(f.LnkPath);
+                return;
+            }
             if (f.LnkPath == null || !File.Exists(f.LnkPath)) { f.Name = newName; return; }
             string target = NewPath(newName);
             File.Move(f.LnkPath, target);
@@ -183,6 +252,7 @@ namespace Pastel
 
         public static void Delete(FolderModel f)
         {
+            try { File.Delete(StashPath(f)); } catch { }
             try { if (f.LnkPath != null) File.Delete(f.LnkPath); } catch { }
             if (f.LnkPath != null) Notify(0x00000004 /*DELETE*/, f.LnkPath);
         }

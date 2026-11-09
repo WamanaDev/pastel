@@ -193,7 +193,14 @@ namespace Pastel
 
             var pop = new PopupWindow(f, anchor);
             _popup = pop;
-            pop.Closed += (_, _) => { if (ReferenceEquals(_popup, pop)) _popup = null; };
+            GroupLauncher.EditingId = f.Id; // aberta: nunca some da área de trabalho
+            GroupLauncher.SyncHidden(f);
+            pop.Closed += (_, _) =>
+            {
+                // o balão antigo pode fechar depois de o novo abrir: só o atual libera o EditingId
+                if (ReferenceEquals(_popup, pop)) { _popup = null; if (GroupLauncher.EditingId == f.Id) GroupLauncher.EditingId = null; }
+                if (Cfg.Folders.Contains(f)) { GroupLauncher.SyncHidden(f); ConfigStore.Save(); } // ficou vazia com o balão aberto: some agora
+            };
             pop.ShowAtAnchor();
         }
 
@@ -439,6 +446,14 @@ namespace Pastel
             ConfigStore.Save();
             _sendSig = "";
             if (on) RefreshServiceMenu(); else ShellMenus.UnregisterServiceMenu();
+        }
+
+        /// <summary>Liga/desliga "Ocultar pastas vazias": desligar devolve todas à área de trabalho.</summary>
+        public static void SetHideEmptyFolders(bool on)
+        {
+            Cfg.HideEmptyFolders = on;
+            foreach (var f in Cfg.Folders) GroupLauncher.SyncHidden(f);
+            ConfigStore.Save();
         }
 
         public static void SetAutostart(bool on) => ShellMenus.SetAutostart(on, Exe, IconFile);

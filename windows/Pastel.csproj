@@ -11,7 +11,7 @@
     <AssemblyName>Pastel</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Pastel.ico</ApplicationIcon>
-    <Version>0.1.2</Version>
+    <Version>0.1.3</Version>
     <Authors>Wictor Pamplona</Authors>
     <Product>Pastel</Product>
     <Description>A pasta do celular, no seu PC.</Description>
@@ -22,14 +22,6 @@
   </PropertyGroup>
 
   <!-- Main próprio em Program.cs: App.xaml vira Page em vez de ApplicationDefinition -->
-  <!-- A versão Linux (Avalonia) mora em linux\ e tem projeto próprio: o SDK inclui subpastas sozinho, então exclui aqui. -->
-  <ItemGroup>
-    <Compile Remove="linux\**" />
-    <Page Remove="linux\**" />
-    <EmbeddedResource Remove="linux\**" />
-    <None Remove="linux\**" />
-  </ItemGroup>
-
   <ItemGroup>
     <ApplicationDefinition Remove="App.xaml" />
     <Page Include="App.xaml" />

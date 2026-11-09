@@ -29,8 +29,17 @@ dotnet publish -c Release -r linux-x64 --self-contained true -o publish/linux-x6
   apps de dentro). O Plasma cuida de posição, grade, renomear e excluir; o Pastel acompanha.
 - **Duplo clique** na pasta abre um balão com a ponta apontando para o ícone. Mais de 12 apps vira páginas
   (roda do mouse, setas ou pontinhos).
-- **Soltar atalhos** da área de trabalho na pasta (ou no balão): o atalho **sai** de lá e vai para
+- **Soltar atalhos** da área de trabalho na pasta (ou no balão): só o atalho `.desktop` **sai** de lá e vai para
   `~/.local/share/pastel/Grupos/`. Remover da pasta ou excluí-la devolve o atalho.
+- **Arquivo, programa ou pasta que não é atalho não é movido**: a pasta do Pastel recebe um atalho `.desktop`
+  apontando para ele e o original **fica onde está** (ao soltar, e também no menu **Pastel** do Dolphin).
+  Remover da pasta apaga só o atalho; o original nunca é mexido.
+- **Ocultar pastas vazias** (opcional, em Configurações > Geral): a pasta vazia (que não acabou de ser criada) sai da
+  área de trabalho e fica guardada em `~/.local/share/pastel/Ocultas/`; ela volta sozinha quando recebe um item.
+  A pasta recém-criada fica visível até o primeiro item. Funciona mesmo com "mostrar arquivos ocultos" ligado.
+- **Ícones ajustados**: ícones pequenos ou com muita margem (PNG de 48 px, glifo pequeno no meio de um fundo liso)
+  são ampliados para preencher o quadrado arredondado, e o Pastel prefere a versão maior (SVG ou PNG grande) do tema;
+  ícones que já enchem o quadrado ficam como estão.
 - **Flutuantes**: barras de apps na área de trabalho, no fundo das janelas, que encaixam na grade. Tamanho
   mínimo a grande, com vidro ou sem fundo, com ou sem nome, e efeito do mouse (nenhum, destaque ou
   "quanto mais perto, maior", como um dock).
@@ -52,10 +61,18 @@ Provado num Linux real (Ubuntu), com `pastel --selftest` e `pastel --selftest-gu
 - abrir um `.desktop` com `gio launch`, inclusive com espaços e aspas no caminho do `Exec`;
 - o socket entre instâncias (segunda instância entrega os argumentos e sai);
 - procurar ícones nos temas do sistema (PNG e SVG) e padronizá-los;
+- o ajuste de ícones pequenos/com margem (ícone sintético pequeno enche o quadrado; ícone cheio fica igual) e a
+  busca de uma versão maior no tema: este teste também passou no Windows;
 - gerar o menu de contexto, a entrada do menu de aplicativos e o autostart;
 - abrir o Avalonia num X11: o balão e a barra flutuante viram janelas reais com transparência de verdade
   (32 bits), no tamanho certo, a barra exatamente na célula da grade, e o pedido de "no fundo, fora da
   barra de tarefas" gravado na janela.
+
+**Funções novas (0.1.3): só no autoteste.** Mover só atalhos `.desktop` (e criar atalho para arquivo, programa ou
+pasta sem mover o original), ocultar pastas vazias e o ajuste de ícones têm casos no `pastel --selftest`, mas
+**ninguém as viu funcionando num KDE real**. Em especial: o menu Pastel do Dolphin com esses itens, o soltar
+do Dolphin/Plasma, e a pasta vazia sumir e voltar da área de trabalho do Plasma. Esta nota será ajustada
+quando houver teste num KDE de verdade.
 
 **Não verificado** (precisa de um KDE de verdade):
 
@@ -63,7 +80,8 @@ Provado num Linux real (Ubuntu), com `pastel --selftest` e `pastel --selftest-gu
 - o menu **Pastel** no botão direito do Dolphin (o arquivo é gerado no formato certo, mas ninguém o abriu);
 - o ícone na bandeja (precisa de D-Bus; sem ele o app segue funcionando só pelas pastas);
 - arrastar e soltar entre o Dolphin/Plasma e o balão;
-- se os ícones novos aparecem na hora na área de trabalho do Plasma.
+- se os ícones novos aparecem na hora na área de trabalho do Plasma;
+- se o Plasma remove e recoloca a pasta oculta sem deixar espaço vazio na grade ou reposicionar os outros ícones.
 
 ## Limitações do KDE e do Wayland
 
@@ -78,6 +96,12 @@ Provado num Linux real (Ubuntu), com `pastel --selftest` e `pastel --selftest-gu
   aplicativos (Nova pasta, Novo flutuante, Configurações).
 - **Recentes do Menu Iniciar**: os atalhos das pastas ficam na área de trabalho, fora das pastas de
   aplicativos, então não aparecem como apps. Não confirmei se o Kickoff lista o "Pastel" em recentes.
+- **Pastas ocultas** ficam em `~/.local/share/pastel/Ocultas/`, não na lixeira; se você apagar essa pasta, as
+  pastas vazias somem de vez. A pasta oculta não aparece no Plasma até receber um item (ou até você desligar a opção).
+- **Arquivos, programas e pastas** que não são atalhos não são movidos (por segurança): o que entra na pasta do Pastel
+  é um atalho, então apagar o original por fora deixa um atalho quebrado dentro da pasta.
+- Ícones muito pequenos só melhoram até onde o tema tem uma versão maior; se só existe um PNG minúsculo, ele é
+  ampliado e pode ficar um pouco macio.
 - Escolher arquivos usa `kdialog` (KDE) ou `zenity`. Sem nenhum dos dois, arraste os apps para a pasta.
 
 ## Para quem for mexer no código

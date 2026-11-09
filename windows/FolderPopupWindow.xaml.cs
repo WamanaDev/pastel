@@ -219,7 +219,10 @@ namespace Pastel
                 menu.Items.Add(mi);
             }
             var f = _folder;
-            Add("Adicionar apps…", () => TheApp.PickFiles(f));
+            if (f.IsMirror)
+                Add("Abrir no Explorer", () => { try { System.Diagnostics.Process.Start("explorer.exe", $"\"{f.SourcePath}\""); } catch { } });
+            else
+                Add("Adicionar apps…", () => TheApp.PickFiles(f));
             Add("Renomear pasta", () => TheApp.RenameGroup(f));
             menu.Items.Add(new Separator());
             Add("Excluir pasta", () => TheApp.DeleteGroup(f));
@@ -234,6 +237,8 @@ namespace Pastel
             var items = _folder.Items.ToList();
             int n = items.Count;
 
+            if (_folder.IsMirror)
+                EmptyHint.Text = FolderMirror.IsAvailable(_folder) ? "Esta pasta está vazia." : "Não achei a pasta de origem. Ela foi movida ou apagada?";
             EmptyHint.Visibility = n == 0 ? Visibility.Visible : Visibility.Collapsed;
             Viewport.Visibility = n == 0 ? Visibility.Collapsed : Visibility.Visible;
 
@@ -370,7 +375,7 @@ namespace Pastel
             var remove = new MenuItem { Header = "Remover da pasta" };
             remove.Click += (_, _) => TheApp.RemoveItem(_folder, item);
             menu.Items.Add(open);
-            menu.Items.Add(remove);
+            if (!_folder.IsMirror) menu.Items.Add(remove); // espelhada: nunca mexe nos arquivos de origem
             cell.ContextMenu = menu;
 
             return cell;
@@ -406,13 +411,13 @@ namespace Pastel
 
         private void Window_DragOver(object sender, DragEventArgs e)
         {
-            e.Effects = !_dragging && e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Link : DragDropEffects.None;
+            e.Effects = !_dragging && !_folder.IsMirror && e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Link : DragDropEffects.None;
             e.Handled = true;
         }
 
         private void Window_Drop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetData(DataFormats.FileDrop) is string[] files) TheApp.AddPaths(_folder, files);
+            if (!_folder.IsMirror && e.Data.GetData(DataFormats.FileDrop) is string[] files) TheApp.AddPaths(_folder, files);
             e.Handled = true;
         }
     }

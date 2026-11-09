@@ -35,7 +35,7 @@ refactor: / chore: / build:
 - Não force-push depois que a PR tiver revisão.
 
 ## Versão e releases
-- Todo PR que muda o comportamento do app (`feat:` ou `fix:`, no Windows ou no Linux) **sobe a versão** no próprio PR: `Pastel.csproj` e `linux/Pastel.Linux.csproj`, sempre iguais, e `AppVersion` em `installer/Pastel.iss`. Correção de bug = versão de correção (0.1.2 → 0.1.3).
+- Todo PR que muda o comportamento do app (`feat:` ou `fix:`, no Windows ou no Linux) **sobe a versão** no próprio PR: `windows/Pastel.csproj` e `linux/Pastel.Linux.csproj`, sempre iguais, e `AppVersion` em `installer/Pastel.iss`. Correção de bug = versão de correção (0.1.3 → 0.1.4).
 - PRs que não mudam o app (`docs:`, `chore:`, `ci:`) **não** sobem a versão.
 - Ao mergear na `main`, se a versão do PR ainda não tem release, o GitHub Actions compila o Windows e o Linux e publica o release `vX.Y.Z` sozinho (`.github/workflows/release.yml`). O app instalado avisa o usuário.
 

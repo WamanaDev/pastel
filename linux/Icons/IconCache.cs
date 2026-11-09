@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Avalonia.Media.Imaging;
 using SkiaSharp;
 
@@ -30,7 +31,21 @@ namespace Pastel
                 {
                     var file = IconResolver.ResolveForItem(item);
                     // carrega grande e reduz depois: nítido mesmo nos ícones pequenos
-                    using var raw = file == null ? null : IconResolver.Load(file, 256);
+                    var raw = file == null ? null : IconResolver.Load(file, 256);
+                    // ícone de baixa resolução / com grande margem (< 160px visíveis): tenta uma versão maior do tema
+                    if (file != null && (raw == null || IconStyler.ContentExtent(raw) < 160))
+                    {
+                        int best = raw == null ? 0 : IconStyler.ContentExtent(raw);
+                        foreach (var alt in IconResolver.Alternatives(file).Take(4))
+                        {
+                            var cand = IconResolver.Load(alt, 256);
+                            if (cand == null) continue;
+                            int ext = IconStyler.ContentExtent(cand);
+                            if (ext > best) { raw?.Dispose(); raw = cand; best = ext; } else cand.Dispose();
+                            if (best >= 160) break;
+                        }
+                    }
+                    using var rawOwner = raw;
                     if (raw != null) result = IconStyler.Style(raw, size, light);
                 }
                 catch { }

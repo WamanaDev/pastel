@@ -13,6 +13,26 @@ namespace Pastel
     internal static class IconStyler
     {
         private static readonly SKSamplingOptions Smooth = new(SKFilterMode.Linear, SKMipmapMode.Linear);
+        // para ampliar glifos pequenos sem serrilhado nem borrão demais
+        private static readonly SKSamplingOptions Sharp = new(SKCubicResampler.Mitchell);
+
+        /// <summary>Maior lado (em px) da área sólida (alfa >= 128) da imagem: mede quanta resolução útil ela tem.</summary>
+        public static int ContentExtent(SKBitmap src)
+        {
+            int w = src.Width, h = src.Height;
+            var px = src.Pixels;
+            int minX = w, minY = h, maxX = -1, maxY = -1;
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                    if (px[y * w + x].Alpha >= 128)
+                    {
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                        if (y < minY) minY = y;
+                        if (y > maxY) maxY = y;
+                    }
+            return maxX < minX ? 0 : Math.Max(maxX - minX + 1, maxY - minY + 1);
+        }
 
         public static SKBitmap Style(SKBitmap src, int size, bool light)
         {
@@ -23,7 +43,9 @@ namespace Pastel
             int ring = Math.Max(1, Math.Min(w, h) / 20);
             long ringTotal = 0, ringOpaque = 0, lumCount = 0;
             double lumSum = 0;
-            int minX = w, minY = h, maxX = -1, maxY = -1;
+            int minX = w, minY = h, maxX = -1, maxY = -1;       // qualquer pixel visível (a > 24)
+            int cMinX = w, cMinY = h, cMaxX = -1, cMaxY = -1;   // só o miolo sólido (a >= 128)
+            long rr = 0, rg = 0, rb = 0;
             for (int y = 0; y < h; y++)
             {
                 for (int x = 0; x < w; x++)
@@ -37,15 +59,70 @@ namespace Pastel
                         if (y < minY) minY = y;
                         if (y > maxY) maxY = y;
                     }
+                    if (a >= 128)
+                    {
+                        if (x < cMinX) cMinX = x;
+                        if (x > cMaxX) cMaxX = x;
+                        if (y < cMinY) cMinY = y;
+                        if (y > cMaxY) cMaxY = y;
+                    }
                     if (a > 128) { lumSum += 0.2126 * c.Red + 0.7152 * c.Green + 0.0722 * c.Blue; lumCount++; }
-                    if (x < ring || y < ring || x >= w - ring || y >= h - ring) { ringTotal++; if (a >= 200) ringOpaque++; }
+                    if (x < ring || y < ring || x >= w - ring || y >= h - ring)
+                    {
+                        ringTotal++;
+                        if (a >= 200) { ringOpaque++; rr += c.Red; rg += c.Green; rb += c.Blue; }
+                    }
                 }
+            }
+
+            // sombras/halos fracos não contam: prefere o miolo sólido do desenho (+2% de folga)
+            if (cMaxX >= cMinX && cMaxY >= cMinY)
+            {
+                int padX = Math.Max(1, (cMaxX - cMinX + 1) / 50), padY = Math.Max(1, (cMaxY - cMinY + 1) / 50);
+                minX = Math.Max(0, cMinX - padX); maxX = Math.Min(w - 1, cMaxX + padX);
+                minY = Math.Max(0, cMinY - padY); maxY = Math.Min(h - 1, cMaxY + padY);
             }
 
             double lum = lumCount > 0 ? lumSum / lumCount : 128;
             bool hasContent = maxX >= minX && maxY >= minY;
             bool fullBleed = hasContent && ringTotal > 0 && ringOpaque / (double)ringTotal >= 0.6 &&
                              (maxX - minX + 1) >= w * 0.9 && (maxY - minY + 1) >= h * 0.9;
+
+            // fundo opaco uniforme com um glifo pequeno no meio (ícone de baixa resolução / com grande margem):
+            // acha o bbox do que difere do fundo, para o glifo poder ocupar o tile
+            bool solidBg = false;
+            SKColor solidColor = default;
+            int gMinX = w, gMinY = h, gMaxX = -1, gMaxY = -1;
+            if (ringOpaque > 0 && ringOpaque / (double)ringTotal >= 0.9)
+            {
+                int br = (int)(rr / ringOpaque), bg2 = (int)(rg / ringOpaque), bb = (int)(rb / ringOpaque);
+                long dev = 0;
+                for (int y = 0; y < h; y++)
+                    for (int x = 0; x < w; x++)
+                    {
+                        var c = px[y * w + x];
+                        bool edge = x < ring || y < ring || x >= w - ring || y >= h - ring;
+                        int d = Math.Abs(c.Red - br) + Math.Abs(c.Green - bg2) + Math.Abs(c.Blue - bb);
+                        if (edge) { if (d > 36) dev++; continue; }
+                        if (c.Alpha > 24 && d > 60)
+                        {
+                            if (x < gMinX) gMinX = x;
+                            if (x > gMaxX) gMaxX = x;
+                            if (y < gMinY) gMinY = y;
+                            if (y > gMaxY) gMaxY = y;
+                        }
+                    }
+                if (dev < ringTotal * 0.05 && gMaxX >= gMinX && gMaxY >= gMinY &&
+                    ((gMaxX - gMinX + 1) < w * 0.7 || (gMaxY - gMinY + 1) < h * 0.7))
+                {
+                    solidBg = true;
+                    solidColor = new SKColor((byte)br, (byte)bg2, (byte)bb);
+                    int gp = Math.Max(1, Math.Max(gMaxX - gMinX, gMaxY - gMinY) / 40);
+                    gMinX = Math.Max(0, gMinX - gp); gMinY = Math.Max(0, gMinY - gp);
+                    gMaxX = Math.Min(w - 1, gMaxX + gp); gMaxY = Math.Min(h - 1, gMaxY + gp);
+                }
+            }
+            if (solidBg) fullBleed = false;
 
             // --- desenho ---
             using var surface = SKSurface.Create(new SKImageInfo(size, size, SKColorType.Rgba8888, SKAlphaType.Premul));
@@ -65,6 +142,17 @@ namespace Pastel
                 canvas.DrawImage(image, new SKRect(inset, inset, w - inset, h - inset), tile, Smooth, paint);
                 canvas.Restore();
             }
+            else if (solidBg)
+            {
+                paint.Color = solidColor;
+                canvas.DrawRoundRect(tile, radius, radius, paint);
+                paint.Color = SKColors.White;
+                int cw = gMaxX - gMinX + 1, ch = gMaxY - gMinY + 1;
+                float scale = size * 0.66f / Math.Max(cw, ch);
+                float dw = cw * scale, dh = ch * scale;
+                canvas.DrawImage(image, new SKRect(gMinX, gMinY, gMaxX + 1, gMaxY + 1),
+                    new SKRect((size - dw) / 2f, (size - dh) / 2f, (size + dw) / 2f, (size + dh) / 2f), Sharp, paint);
+            }
             else
             {
                 var bg = lum >= 170 ? new SKColor(0x2B, 0x2F, 0x3B)
@@ -80,7 +168,7 @@ namespace Pastel
                     float scale = size * 0.66f / Math.Max(cw, ch);
                     float dw = cw * scale, dh = ch * scale;
                     canvas.DrawImage(image, new SKRect(minX, minY, maxX + 1, maxY + 1),
-                        new SKRect((size - dw) / 2f, (size - dh) / 2f, (size + dw) / 2f, (size + dh) / 2f), Smooth, paint);
+                        new SKRect((size - dw) / 2f, (size - dh) / 2f, (size + dw) / 2f, (size + dh) / 2f), Sharp, paint);
                 }
             }
 

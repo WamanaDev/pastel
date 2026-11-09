@@ -1,13 +1,13 @@
 ; Instalador do Pastel para Windows (Inno Setup 6).
 ; Compilar:
-;   dotnet publish Pastel.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false "-p:SatelliteResourceLanguages=en%3Bpt-BR" -o publish\win-x64-sc
+;   dotnet publish windows\Pastel.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -p:DebugSymbols=false "-p:SatelliteResourceLanguages=en%3Bpt-BR" -o publish\win-x64-sc
 ;   ISCC installer\Pastel.iss
 ;
 ; O app é AUTÔNOMO: leva o .NET dentro. Por isso o instalador não confere nem baixa nada, funciona offline e, como não
 ; precisa instalar o .NET (que exigia administrador), instala só para o usuário atual, sem pedido de administrador.
 
 #define AppName "Pastel"
-#define AppVersion "0.1.2"
+#define AppVersion "0.1.3"
 #define AppPublisher "Wictor Pamplona"
 #define AppURL "https://github.com/WamanaDev/pastel"
 #define AppExe "Pastel.exe"
@@ -28,7 +28,7 @@ PrivilegesRequiredOverridesAllowed=dialog
 DisableProgramGroupPage=yes
 OutputDir=Output
 OutputBaseFilename=Pastel-Setup
-SetupIconFile=..\Pastel.ico
+SetupIconFile=..\windows\Pastel.ico
 UninstallDisplayIcon={app}\{#AppExe}
 Compression=lzma2/ultra64
 SolidCompression=yes
@@ -70,6 +70,7 @@ Root: HKCU; Subkey: "Software\Classes\DesktopBackground\Shell\Pastel.NovoGrupo";
 Root: HKCU; Subkey: "Software\Classes\*\shell\Pastel.Enviar"; Flags: dontcreatekey uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\Directory\shell\Pastel.Enviar"; Flags: dontcreatekey uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\InternetShortcut\shell\Pastel.Enviar"; Flags: dontcreatekey uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\lnkfile\shell\Pastel.Enviar"; Flags: dontcreatekey uninsdeletekey
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueName: "Pastel"; Flags: dontcreatekey uninsdeletevalue
 
 [Code]

@@ -125,7 +125,7 @@ mesmo assim são apagadas logo depois de abrir.
 Os dados ficam em `%AppData%\Pastel` (`config.json`, os atalhos movidos em `Grupos\` e, com *Ocultar pastas vazias*
 ligado, os arquivos das pastas escondidas em `Ocultas\`).
 
-## Novidades da 0.1.2
+## Novidades da 0.1.3
 
 - **Pastel > Enviar para pasta / flutuante** no botão direito, para atalhos, arquivos, programas e pastas. Antes, o
   atalho podia ficar na área de trabalho e *Novo flutuante…* não abria. Os dois foram corrigidos.

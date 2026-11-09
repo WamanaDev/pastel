@@ -213,8 +213,25 @@ namespace Pastel
                 var fi = new SHFILEINFO();
                 SHGetFileInfo(path, 0, ref fi, (uint)Marshal.SizeOf(fi), 0x4000 /*SYSICONINDEX*/);
                 SHChangeNotifyIndex(0x00008000 /*UPDATEIMAGE*/, 0x0003 /*DWORD*/, (IntPtr)fi.iIcon, IntPtr.Zero);
+                ScheduleAssocChanged();
             }
             catch { }
+        }
+
+        private static System.Threading.Timer? _assocTimer;
+
+        /// <summary>
+        /// Os avisos acima não bastam: na versão autônoma o Explorer seguia com o quadrado vazio. Só o aviso de
+        /// "associações mudaram" faz ele recarregar o cache de ícones (testado). Ele recarrega todos os ícones da
+        /// área de trabalho, então os pedidos seguidos (várias pastas, troca de tema) viram um só.
+        /// </summary>
+        private static void ScheduleAssocChanged()
+        {
+            _assocTimer?.Dispose();
+            _assocTimer = new System.Threading.Timer(_ =>
+            {
+                try { SHChangeNotifyIndex(0x08000000 /*ASSOCCHANGED*/, 0, IntPtr.Zero, IntPtr.Zero); } catch { }
+            }, null, 700, System.Threading.Timeout.Infinite);
         }
 
         public static void Rename(FolderModel f, string newName)

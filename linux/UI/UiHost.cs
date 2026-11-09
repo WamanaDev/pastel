@@ -75,6 +75,7 @@ namespace Pastel
             RefreshServiceMenu();
             foreach (var m in Cfg.Floats) OpenFloat(m);
             BuildTray();
+            StartUpdateChecks();
             StartWatchers();
             RefreshThemeIcons();
 
@@ -443,6 +444,66 @@ namespace Pastel
         public static void SetAutostart(bool on) => ShellMenus.SetAutostart(on, Exe, IconFile);
 
         public static void OpenDataFolder() => AppLauncher.OpenFolder(Paths.DataDir);
+
+        // ---------- atualização ----------
+
+        private static Updater.Release? _pending;
+        private static NativeMenuItem? _updateItem;
+        private static Avalonia.Threading.DispatcherTimer? _updateTimer;
+
+        /// <summary>Procura sozinho pouco depois de abrir e a cada 12 horas (se o usuário não desligou).</summary>
+        private static void StartUpdateChecks()
+        {
+            _updateTimer = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
+            _updateTimer.Tick += async (_, _) =>
+            {
+                _updateTimer!.Interval = TimeSpan.FromHours(12);
+                if (Cfg.CheckUpdates) await CheckForUpdateAsync(manual: false);
+            };
+            _updateTimer.Start();
+        }
+
+        /// <summary>Devolve a mensagem para mostrar quando a checagem foi pedida pelo usuário.</summary>
+        public static async Task<string?> CheckForUpdateAsync(bool manual)
+        {
+            var (rel, ok) = await Updater.CheckAsync();
+            if (!ok) return manual ? "Não consegui falar com o GitHub agora. Tente de novo mais tarde." : null;
+            if (rel == null) return manual ? "Você já está na versão mais recente." : null;
+
+            _pending = rel;
+            if (_tray?.Menu != null && _updateItem == null)
+            {
+                _updateItem = new NativeMenuItem($"Atualizar para {rel.Version.Major}.{rel.Version.Minor}.{rel.Version.Build}…");
+                _updateItem.Click += (_, _) => _ = OfferUpdateAsync(rel);
+                _tray.Menu.Items.Insert(0, _updateItem);
+            }
+            if (manual) { await OfferUpdateAsync(rel); return null; }
+            if (Cfg.SkippedVersion != rel.Tag) Toast("Pastel: versão nova", $"A versão {rel.Tag} está disponível. Clique no ícone do Pastel na bandeja para atualizar.");
+            return null;
+        }
+
+        private static async Task OfferUpdateAsync(Updater.Release rel)
+        {
+            if (!await Dialogs.Confirm("Pastel: versão nova",
+                    $"Tem uma versão nova do Pastel: {rel.Tag} (você está na {Updater.Current}).\n\nAtualizar agora? O Pastel fecha e abre de novo sozinho.", "Atualizar"))
+            {
+                Cfg.SkippedVersion = rel.Tag; ConfigStore.Save(); return;
+            }
+            if (await Updater.DownloadAndInstallAsync(rel)) { _lifetime?.Shutdown(); return; }
+            Dialogs.Info("Pastel", "Não consegui baixar ou conferir a atualização, então não instalei nada. Tente de novo mais tarde.");
+        }
+
+        /// <summary>Notificação do desktop (libnotify / KDE). Se não houver, o item do menu da bandeja ainda avisa.</summary>
+        private static void Toast(string title, string body)
+        {
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo("notify-send") { UseShellExecute = false };
+                foreach (var a in new[] { "-a", "Pastel", "-i", IconFile, title, body }) psi.ArgumentList.Add(a);
+                System.Diagnostics.Process.Start(psi);
+            }
+            catch { }
+        }
 
         // ---------- bandeja do sistema ----------
 

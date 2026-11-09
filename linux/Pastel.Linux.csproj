@@ -8,7 +8,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>pastel</AssemblyName>
     <RootNamespace>Pastel</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>0.1.3</Version>
     <!-- sem depender do ICU do sistema (nem toda instalação mínima tem) -->
     <InvariantGlobalization>true</InvariantGlobalization>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>

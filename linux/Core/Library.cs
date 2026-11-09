@@ -35,23 +35,38 @@ namespace Pastel
                     try { p = new Uri(p).LocalPath; } catch { continue; }
 
                 var existing = owner.Items.FirstOrDefault(i => string.Equals(i.Path, p, StringComparison.Ordinal) ||
-                                                               string.Equals(i.OriginalPath, p, StringComparison.Ordinal));
+                                                               string.Equals(i.OriginalPath, p, StringComparison.Ordinal) ||
+                                                               string.Equals(i.SourcePath, p, StringComparison.Ordinal));
                 if (existing != null)
                 {
                     if (Adopt(owner, existing)) changed = true; // já estava, mas o atalho ainda está solto na área de trabalho
                     continue;
                 }
 
-                string name = Directory.Exists(p) ? Path.GetFileName(p.TrimEnd('/')) : NameOf(p);
+                string? original = null, source = null;
+                string path = p;
+                string name;
+                if (DesktopFiles.IsShortcutFile(p))
+                {
+                    name = NameOf(p);
+                    if (DesktopFiles.TryTake(p, owner.Id, out var moved)) { original = p; path = moved; }
+                }
+                else if (File.Exists(p) || Directory.Exists(p))
+                {
+                    // arquivo, programa ou pasta: fica onde está; o Pastel cria um atalho .desktop na pasta gerenciada
+                    string? link = DesktopFiles.CreateLink(p, owner.Id);
+                    if (link == null) continue;
+                    source = Path.GetFullPath(p);
+                    path = link;
+                    name = NameOf(link);
+                }
+                else name = NameOf(p);
                 if (string.IsNullOrEmpty(name)) name = p;
 
-                string? original = null;
-                string path = p;
-                if (DesktopFiles.TryTake(p, owner.Id, out var moved)) { original = p; path = moved; }
-
-                owner.Items.Add(new ShortcutItem { Name = name, Path = path, OriginalPath = original });
+                owner.Items.Add(new ShortcutItem { Name = name, Path = path, OriginalPath = original, SourcePath = source });
                 changed = true;
             }
+            if (changed && owner is FolderModel fo) GroupLauncher.SyncHidden(fo); // recebeu item: deixa de ser nova e volta à área de trabalho
             if (changed) { ConfigStore.Save(); OwnerChanged?.Invoke(owner); }
             return changed;
         }
@@ -66,7 +81,7 @@ namespace Pastel
 
         private static bool Adopt(IItemOwner owner, ShortcutItem item)
         {
-            if (item.OriginalPath != null) return false;
+            if (item.OriginalPath != null || item.SourcePath != null) return false;
             if (!DesktopFiles.TryTake(item.Path, owner.Id, out var moved)) return false;
             item.OriginalPath = item.Path;
             item.Path = moved;
@@ -77,6 +92,7 @@ namespace Pastel
         {
             DesktopFiles.Restore(item); // devolve à área de trabalho, se veio de lá
             owner.Items.Remove(item);
+            if (owner is FolderModel fo) GroupLauncher.SyncHidden(fo); // ficou vazia: pode sumir (se a opção estiver ligada)
             ConfigStore.Save();
             OwnerChanged?.Invoke(owner);
         }
@@ -92,7 +108,7 @@ namespace Pastel
 
         public static FolderModel CreateFolder(string name)
         {
-            var f = new FolderModel { Name = string.IsNullOrWhiteSpace(name) ? "Pasta" : name.Trim() };
+            var f = new FolderModel { Name = string.IsNullOrWhiteSpace(name) ? "Pasta" : name.Trim(), Fresh = true };
             Cfg.Folders.Add(f);
             GroupLauncher.Ensure(f, force: true);
             if (f.LauncherPath != null) f.Name = Path.GetFileNameWithoutExtension(f.LauncherPath);
@@ -145,7 +161,8 @@ namespace Pastel
         {
             foreach (var f in Cfg.Folders.ToList())
             {
-                if (f.LauncherPath != null && !File.Exists(f.LauncherPath))
+                // pasta guardada em Ocultas/ (vazia, de propósito) não é pasta apagada
+                if (f.LauncherPath != null && !File.Exists(f.LauncherPath) && !GroupLauncher.IsStashed(f))
                 {
                     var found = DesktopEntry.FindById(f.Id);
                     if (found == null) { RemoveGroupData(f); continue; } // o usuário apagou a pasta
@@ -160,13 +177,13 @@ namespace Pastel
                     if (!string.IsNullOrWhiteSpace(shown)) f.Name = shown!;
                 }
 
-                bool changed = f.Items.RemoveAll(i => i.OriginalPath != null && !File.Exists(i.Path)) > 0;
+                bool changed = f.Items.RemoveAll(i => (i.OriginalPath != null || i.SourcePath != null) && !File.Exists(i.Path)) > 0;
                 foreach (var item in f.Items.ToList()) if (Adopt(f, item)) changed = true;
 
                 GroupLauncher.Ensure(f, force: changed);
             }
             foreach (var m in Cfg.Floats)
-                m.Items.RemoveAll(i => i.OriginalPath != null && !File.Exists(i.Path));
+                m.Items.RemoveAll(i => (i.OriginalPath != null || i.SourcePath != null) && !File.Exists(i.Path));
 
             ConfigStore.Save();
         }

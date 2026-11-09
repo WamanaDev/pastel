@@ -194,7 +194,7 @@
     <div class="wrap">
       <div class="head">
         <h2>Como usar.</h2>
-        <p>Duas coisas que facilitam o dia a dia, passo a passo. Valem para o Windows.</p>
+        <p>Duas coisas que facilitam o dia a dia, passo a passo. Valem para o Windows e para o Linux (KDE); no Linux o menu fica no botão direito do Dolphin e da área de trabalho.</p>
       </div>
 
       <div class="tut">
@@ -202,7 +202,7 @@
           <h3>Enviar para uma pasta, pelo botão direito</h3>
           <p>Sem arrastar nada: mande um atalho, arquivo, programa ou pasta direto para uma pasta ou flutuante.</p>
           <ol class="how">
-            <li><span>Clique com o botão direito no item. No Windows 11, escolha <strong>Mostrar mais opções</strong>.</span></li>
+            <li><span>Clique com o botão direito no item (no Linux, no Dolphin ou na área de trabalho). No Windows 11, escolha <strong>Mostrar mais opções</strong>.</span></li>
             <li><span>Vá em <strong>Pastel</strong> e depois em <strong>Enviar para pasta</strong> (ou <strong>Enviar para flutuante</strong>).</span></li>
             <li><span>Escolha a pasta, por exemplo <em>Jogos</em>. Para criar uma nova na hora, use <strong>Novo flutuante…</strong></span></li>
             <li><span>Pronto. O item aparece dentro da pasta.</span></li>
@@ -218,12 +218,12 @@
           <h3>Esconder as pastas vazias</h3>
           <p>Pasta sem nada dentro só ocupa espaço. Deixe o Pastel tirar ela do caminho.</p>
           <ol class="how">
-            <li><span>Abra <strong>Configurações</strong> (botão direito na área de trabalho, Pastel) e vá na aba <strong>Geral</strong>.</span></li>
+            <li><span>Abra <strong>Configurações</strong> (botão direito na área de trabalho, Pastel; no Linux, pelo ícone da bandeja) e vá na aba <strong>Geral</strong>.</span></li>
             <li><span>Em <strong>Área de trabalho</strong>, ligue <strong>Ocultar pastas vazias</strong>.</span></li>
             <li><span>As pastas sem itens somem da área de trabalho. Quando uma receber um item, ela volta sozinha.</span></li>
             <li><span>Quer todas de volta? Desligue a opção.</span></li>
           </ol>
-          <p class="tut-note">Pasta recém-criada fica visível até ganhar o primeiro item, e pasta espelhada (a que mostra uma pasta de verdade, como Downloads) nunca some.</p>
+          <p class="tut-note">Pasta recém-criada fica visível até ganhar o primeiro item, e pasta espelhada (a que mostra uma pasta de verdade, como Downloads) nunca some. No Linux, a pasta vazia fica guardada em <code>~/.local/share/pastel/Ocultas</code>.</p>
         </div>
         <figure>
           <div class="frame"><img src="img/tutorial-ocultar-vazias.gif" width="800" height="450" loading="lazy" alt="Ligando a opção Ocultar pastas vazias: as pastas sem itens somem da área de trabalho e voltam quando recebem um atalho."></div>
@@ -252,10 +252,10 @@
       <div class="cards">
         <div class="card"><div class="dot"></div><h3>Balão com páginas</h3><p>Roda do mouse, setas do teclado ou os pontinhos. A troca de página desliza, e dá pra desligar as animações.</p></div>
         <div class="card"><div class="dot"></div><h3>Flutuantes</h3><p>Barras de apps soltas na área de trabalho, encaixadas na grade de ícones. Com vidro ou sem fundo, com ou sem nome, e até efeito de dock: quanto mais perto do mouse, maior.</p></div>
-        <div class="card"><div class="dot"></div><h3>Botão direito em tudo</h3><p>Em qualquer atalho, arquivo, programa ou pasta: Pastel, Enviar para pasta ou flutuante. Ou crie uma nova na hora.</p></div>
+        <div class="card"><div class="dot"></div><h3>Botão direito em tudo</h3><p>Em qualquer atalho, arquivo, programa ou pasta: Pastel, Enviar para pasta ou flutuante. Ou crie uma nova na hora. No Linux, no botão direito do Dolphin.</p></div>
         <div class="card"><div class="dot"></div><h3>Segue o seu tema</h3><p>Claro, escuro e a cor de destaque do seu sistema. Se preferir, o violeta do Pastel.</p></div>
         <div class="card"><div class="dot"></div><h3>Ícones padronizados</h3><p>Quadrados arredondados e chapados, como no Android. Ícone pequeno ou com margem, como os de jogos da Steam, preenche o quadrado todo.</p></div>
-        <div class="card"><div class="dot"></div><h3>Pastas vazias somem</h3><p>Opcional: a pasta sem itens sai da área de trabalho e volta sozinha quando recebe um. Em Configurações, Geral.</p></div>
+        <div class="card"><div class="dot"></div><h3>Pastas vazias somem</h3><p>Opcional, no Windows e no Linux: a pasta sem itens sai da área de trabalho e volta sozinha quando recebe um. Em Configurações, Geral.</p></div>
         <div class="card"><div class="dot"></div><h3>Nada se perde</h3><p>O que sai da área de trabalho fica guardado e volta quando você quiser. Excluir uma pasta devolve tudo pro lugar.</p></div>
       </div>
     </div>
@@ -327,9 +327,9 @@
   <section id="perguntas">
     <div class="wrap">
       <div class="head"><h2>Perguntas.</h2></div>
-      <details><summary>Por que o arquivo não some da área de trabalho?</summary><p>Só atalhos (<code>.lnk</code> e <code>.url</code>) são movidos para a pasta. Quando você envia um arquivo, programa ou pasta, o Pastel cria um atalho dentro da pasta e deixa o original onde está, para não mexer no que é seu. Se quiser tirá-lo da área de trabalho, mova ou apague por conta própria.</p></details>
-      <details><summary>Minha pasta sumiu. Onde está?</summary><p>Provavelmente a opção <strong>Ocultar pastas vazias</strong> está ligada (Configurações, Geral). A pasta sem itens sai da área de trabalho e volta sozinha quando recebe um. Para ver todas agora, desligue a opção. Nada é apagado: o arquivo da pasta fica guardado em <code>%AppData%\Pastel\Ocultas</code>.</p></details>
-      <details><summary>Não acho o menu do Pastel no botão direito.</summary><p>No Windows 11, ele fica em <strong>Mostrar mais opções</strong>, porque o menu novo do Explorer não aceita itens de terceiros. No Windows 10 já aparece direto.</p></details>
+      <details><summary>Por que o arquivo não some da área de trabalho?</summary><p>Só atalhos (<code>.lnk</code> e <code>.url</code> no Windows, <code>.desktop</code> no Linux) são movidos para a pasta. Quando você envia um arquivo, programa ou pasta, o Pastel cria um atalho dentro da pasta e deixa o original onde está, para não mexer no que é seu. Se quiser tirá-lo da área de trabalho, mova ou apague por conta própria.</p></details>
+      <details><summary>Minha pasta sumiu. Onde está?</summary><p>Provavelmente a opção <strong>Ocultar pastas vazias</strong> está ligada (Configurações, Geral). A pasta sem itens sai da área de trabalho e volta sozinha quando recebe um. Para ver todas agora, desligue a opção. Nada é apagado: o arquivo da pasta fica guardado em <code>%AppData%\Pastel\Ocultas</code> (no Linux, <code>~/.local/share/pastel/Ocultas</code>).</p></details>
+      <details><summary>Não acho o menu do Pastel no botão direito.</summary><p>No Windows 11, ele fica em <strong>Mostrar mais opções</strong>, porque o menu novo do Explorer não aceita itens de terceiros. No Windows 10 já aparece direto. No Linux (KDE), o menu fica no botão direito do Dolphin e dos itens da área de trabalho; na área de trabalho vazia o Plasma não deixa adicionar itens, então use a bandeja.</p></details>
       <details><summary>Preciso de conta ou de internet?</summary><p>Não. O Pastel funciona offline e não pede login. Por padrão ele consulta o GitHub de tempos em tempos só para avisar de versões novas (nada seu é enviado), e você pode desligar isso em Configurações > Geral. Nem o instalador do Windows precisa: ele já leva tudo o que o app usa.</p></details>
       <details><summary>Quanto custa?</summary><p>Nada. O Pastel é grátis, o código é aberto (licença MIT) e vai continuar assim.</p></details>
       <details><summary>Os meus atalhos somem?</summary><p>Não. Quando você solta um atalho numa pasta, ele sai da área de trabalho e fica guardado pelo Pastel. Remover da pasta, ou excluir a pasta, devolve o atalho pra área de trabalho.</p></details>

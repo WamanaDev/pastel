@@ -46,13 +46,13 @@ dê dois cliques e um balão abre junto do ícone. Grátis, sem conta e sem inte
   não saem de lá e nada é apagado.
 - **Regras automáticas** (Windows): arquivos novos na área de trabalho, por extensão e/ou parte do nome, vão sozinhos para
   uma pasta ou flutuante. É o mesmo movimento reversível de arrastar.
-- **Ocultar pastas vazias** (Windows, opcional em Configurações > Geral): a pasta vazia sai da área de trabalho e volta
-  sozinha quando recebe um item. Pasta recém-criada fica visível até ganhar o primeiro item, e pasta espelhada nunca some.
+- **Ocultar pastas vazias** (Windows e Linux, opcional em Configurações > Geral): a pasta vazia sai da área de trabalho e volta
+  sozinha quando recebe um item. Pasta recém-criada fica visível até ganhar o primeiro item, e pasta espelhada nunca some. No Linux, a pasta vazia fica guardada em `~/.local/share/pastel/Ocultas/`.
 - **Flutuantes**: barras de apps soltas na área de trabalho, encaixadas na grade de ícones. Tamanho dos ícones
   (mínimo a grande), com vidro ou sem fundo, com ou sem nome, e efeito do mouse (nenhum, destaque no ícone ou
   "quanto mais perto do mouse, maior", como um dock).
 - **Botão direito em qualquer atalho, arquivo, programa ou pasta → Pastel → Enviar para pasta ou flutuante**, ou criar
-  uma nova. Atalhos são movidos para a pasta; o resto ganha um atalho lá dentro e o original fica onde está.
+  uma nova. Atalhos são movidos para a pasta; o resto ganha um atalho lá dentro e o original fica onde está. No Linux (KDE) o menu fica no botão direito do Dolphin e dos itens da área de trabalho.
 - **Ícones padronizados** no estilo chapado arredondado, sem bordas esquisitas. Ícones pequenos ou com margem
   (como os de jogos da Steam) preenchem o quadrado inteiro.
 - **Segue o seu tema**: claro, escuro e a cor de destaque do sistema (ou o violeta do Pastel). Animações opcionais.
@@ -131,6 +131,10 @@ ligado, os arquivos das pastas escondidas em `Ocultas\`).
   atalho podia ficar na área de trabalho e *Novo flutuante…* não abria. Os dois foram corrigidos.
 - **Ocultar pastas vazias** em Configurações > Geral.
 - **Ícones** mais bem ajustados: os pequenos ou com margem agora preenchem o quadrado.
+- **O Linux (KDE) recebeu as mesmas novidades**: só atalhos `.desktop` são movidos (arquivo, programa ou pasta ganha
+  um atalho e o original fica onde está), *Ocultar pastas vazias* e os ícones pequenos preenchendo o quadrado.
+  No Linux o menu **Pastel** fica no botão direito do Dolphin e dos itens da área de trabalho. Elas têm testes no
+  `--selftest`, mas ainda não foram vistas num KDE real (veja [`linux/README.md`](linux/README.md)).
 - O código do app Windows foi para a pasta `windows/`.
 
 ## Limitações conhecidas
@@ -145,7 +149,8 @@ ligado, os arquivos das pastas escondidas em `Ocultas\`).
 - Se mover o `.exe` de lugar, abra-o uma vez: o registro do tipo de arquivo é atualizado.
 - Atalhos da área de trabalho pública (`C:\Users\Public\Desktop`) não saem de lá sem permissão de administrador;
   nesse caso só são referenciados.
-- No Linux, a grade de ícones do Plasma não pode ser lida, e na sessão Wayland o balão abre no meio da tela.
+- No Linux vale o mesmo: só atalhos `.desktop` são movidos e a pasta vazia fica em `~/.local/share/pastel/Ocultas/`
+  com *Ocultar pastas vazias*. Além disso, a grade de ícones do Plasma não pode ser lida, e na sessão Wayland o balão abre no meio da tela.
   Detalhes em [`linux/README.md`](linux/README.md).
 
 ## Compilar

@@ -23,6 +23,9 @@ if [ -x "$APP/pastel" ]; then
   "$APP/pastel" --uninstall-cleanup || echo "Aviso: não consegui devolver todos os atalhos; veja $DATA/pastel/Grupos." >&2
 fi
 
+# pastas vazias guardadas (Ocultas) não deixam lixo: o --uninstall-cleanup já apagou, mas se ele falhou/faltou elas são só atalhos de pastas vazias
+rm -rf "$DATA/pastel/Ocultas"
+
 rm -rf "$APP"
 rm -f "$HOME/.local/bin/pastel"
 rm -f "$DATA/applications/pastel.desktop"

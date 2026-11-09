@@ -11,6 +11,9 @@ namespace Pastel
         public string Path { get; set; } = "";
         /// <summary>Se o atalho foi tirado da área de trabalho, onde ele estava (para devolver depois).</summary>
         public string? OriginalPath { get; set; }
+        /// <summary>Se o Pastel criou este atalho .desktop (Path) apontando para um arquivo, programa ou pasta, o caminho desse original.
+        /// O original nunca é movido nem apagado; ao remover o item só o atalho criado é apagado.</summary>
+        public string? SourcePath { get; set; }
     }
 
     /// <summary>Quem guarda uma lista de apps (pasta ou flutuante).</summary>
@@ -29,6 +32,8 @@ namespace Pastel
         public string? LauncherPath { get; set; }
         /// <summary>Versão do ícone gerado; muda a cada atualização para o KDE não usar o ícone em cache.</summary>
         public int IconRev { get; set; }
+        /// <summary>Recém-criada pelo usuário e ainda sem nenhum item: não é ocultada por "Ocultar pastas vazias". Pastas antigas valem false.</summary>
+        public bool Fresh { get; set; }
         public List<ShortcutItem> Items { get; set; } = new();
     }
 
@@ -69,6 +74,8 @@ namespace Pastel
         public bool CheckUpdates { get; set; } = true;
         /// <summary>Última versão que o usuário disse "agora não"; só volta a avisar quando sair outra.</summary>
         public string SkippedVersion { get; set; } = "";
+        /// <summary>Pasta vazia (e não recém-criada) sai da área de trabalho e fica guardada em Ocultas/ até ganhar item.</summary>
+        public bool HideEmptyFolders { get; set; }
         public List<FolderModel> Folders { get; set; } = new();
         public List<FloatingModel> Floats { get; set; } = new();
     }

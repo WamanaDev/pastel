@@ -8,6 +8,7 @@
 
 <p align="center">
   <a href="https://github.com/WamanaDev/pastel/releases/latest"><img alt="Versão" src="https://img.shields.io/github/v/release/WamanaDev/pastel?label=vers%C3%A3o&color=6C4DFF"></a>
+  <a href="https://github.com/WamanaDev/pastel/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/WamanaDev/pastel/total?label=downloads&color=FF8FB1"></a>
   <a href="LICENSE"><img alt="Licença MIT" src="https://img.shields.io/badge/licen%C3%A7a-MIT-8FE3C0"></a>
   <img alt="Plataformas" src="https://img.shields.io/badge/plataformas-Windows%20%C2%B7%20Linux%20(KDE)-B9A6FF">
   <a href="https://wamanadev.github.io/pastel/"><img alt="Site" src="https://img.shields.io/badge/site-wamanadev.github.io%2Fpastel-FFC79A"></a>
@@ -41,6 +42,13 @@ dê dois cliques e um balão abre junto do ícone. Grátis, sem conta e sem inte
   **balão com a ponta apontando para o ícone**. Mais de 12 apps vira página (roda do mouse, setas ou pontinhos).
 - **Os atalhos saem da bagunça e voltam quando você quiser.** Soltar um atalho numa pasta o move para um lugar
   guardado pelo Pastel; remover da pasta, ou excluí-la, devolve o atalho.
+- **Pastas espelhadas** (Windows): mostram o conteúdo de uma pasta de verdade, como Downloads, sempre atualizado. Os arquivos
+  não saem de lá e nada é apagado.
+- **Regras automáticas** (Windows): arquivos novos na área de trabalho, por extensão e/ou parte do nome, vão sozinhos para
+  uma pasta ou flutuante. É o mesmo movimento reversível de arrastar.
+- **Ocultar pastas vazias** (Windows, opcional em Geral): a pasta vazia sai da área de trabalho
+  (o arquivo dela fica guardado dentro do Pastel, então não aparece nem com "mostrar arquivos ocultos" do Windows) e volta quando receber algo. Pasta recém-criada fica visível até ganhar o primeiro item,
+  e pasta espelhada nunca some.
 - **Flutuantes**: barras de apps soltas na área de trabalho, encaixadas na grade de ícones. Tamanho dos ícones
   (mínimo a grande), com vidro ou sem fundo, com ou sem nome, e efeito do mouse (nenhum, destaque no ícone ou
   "quanto mais perto do mouse, maior", como um dock).
@@ -108,7 +116,7 @@ Os dados ficam em `%AppData%\Pastel` (`config.json` e os atalhos movidos, em `Gr
 
 ```
 dotnet run
-dotnet publish Pastel.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -o publish\win-x64-sc
+dotnet publish windows\Pastel.csproj -c Release -r win-x64 --self-contained true -p:DebugType=None -o publish\win-x64-sc
 ```
 
 O instalador é feito com o [Inno Setup 6](https://jrsoftware.org/isinfo.php):

@@ -152,8 +152,9 @@ namespace Pastel
         // ---------- menu "Pastel > Enviar para" (qualquer arquivo ou pasta) ----------
 
         // "*" cobre arquivos em geral (inclusive .lnk), "Directory" as pastas e "InternetShortcut" os .url,
-        // que o Windows trata à parte (testado: sem isto o menu não aparece neles).
-        private static readonly string[] SendRoots = { "*", "Directory", "InternetShortcut" };
+        // que o Windows trata à parte (testado: sem isto o menu não aparece neles). "lnkfile" (.lnk) também: só assim o
+        // Explorer entrega o próprio atalho em "%1"; pela chave "*" ele entrega o programa de destino do atalho.
+        private static readonly string[] SendRoots = { "*", "Directory", "InternetShortcut", "lnkfile" };
         private static string SendKey(string root) => $@"Software\Classes\{root}\shell\Pastel.Enviar";
 
         /// <summary>
@@ -179,8 +180,8 @@ namespace Pastel
                         k.SetValue("Icon", $"\"{exe}\"");
                         k.SetValue("SubCommands", "");
                     }
-                    WriteSubmenu(exe, key + @"\shell\10pasta", "Enviar para pasta", folderEntries, "Nova pasta…", $"{SendFolderNewArg} \"%1\"");
-                    WriteSubmenu(exe, key + @"\shell\20flutuante", "Enviar para flutuante", floatEntries, "Novo flutuante…", $"{SendFloatNewArg} \"%1\"");
+                    WriteSubmenu(exe, key + @"\shell\10pasta", "Enviar para pasta", folderEntries, "Nova pasta…", $"{SendFolderNewArg} \"%1\"", "p");
+                    WriteSubmenu(exe, key + @"\shell\20flutuante", "Enviar para flutuante", floatEntries, "Novo flutuante…", $"{SendFloatNewArg} \"%1\"", "f");
                 }
             }
             catch { }
@@ -195,7 +196,7 @@ namespace Pastel
         private static string Label(string name) => name.Replace("&", "&&"); // "&" seria tecla de atalho no menu
 
         private static void WriteSubmenu(string exe, string path, string title,
-            List<(string label, string args)> entries, string newLabel, string newArgs)
+            List<(string label, string args)> entries, string newLabel, string newArgs, string prefix)
         {
             using (var k = Registry.CurrentUser.CreateSubKey(path))
             {
@@ -205,8 +206,8 @@ namespace Pastel
 
             int i = 0;
             foreach (var (label, args) in entries)
-                WriteEntry(exe, $@"{path}\shell\{i++:D3}", label, args, separator: false);
-            WriteEntry(exe, $@"{path}\shell\{i:D3}", newLabel, newArgs, separator: entries.Count > 0);
+                WriteEntry(exe, $@"{path}\shell\{prefix}{i++:D3}", label, args, separator: false);
+            WriteEntry(exe, $@"{path}\shell\{prefix}{i:D3}", newLabel, newArgs, separator: entries.Count > 0);
         }
 
         private static void WriteEntry(string exe, string path, string label, string args, bool separator)

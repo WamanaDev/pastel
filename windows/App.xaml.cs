@@ -22,6 +22,12 @@ namespace Pastel
         private readonly Dictionary<string, FloatingWindow> _docks = new();
         private readonly HashSet<string> _iconPending = new();
         private string _sendSig = "";
+        private FolderMirror? _mirror;
+        private readonly HashSet<string> _mirrorDirty = new();
+        private DispatcherTimer? _mirrorTimer;
+        private FileSystemWatcher? _ruleWatcher;
+        private DispatcherTimer? _ruleTimer;
+        private readonly HashSet<string> _ruleCandidates = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>Avisa as janelas abertas (ex.: configurações) que algo mudou.</summary>
         public event Action? StateChanged;
@@ -39,6 +45,8 @@ namespace Pastel
             if (Cfg.DesktopMenu) ShellIntegration.Register(); // atualiza o caminho do .exe
 
             ReconcileAll();
+            StartMirrors();
+            StartRuleWatcher();
             RefreshSendTo();
             foreach (var m in Cfg.Floats) OpenFloat(m);
             BuildTray();
@@ -51,12 +59,59 @@ namespace Pastel
 
             var p = System.Windows.Forms.Cursor.Position;
             Handle(Program.Args, p.X, p.Y);
+
+            // Primeira abertura: pergunta se pode organizar a área de trabalho (depois que tudo já subiu).
+            if (Program.Args.Length == 0)
+                Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(OfferOrganize));
+        }
+
+        /// <summary>
+        /// Na primeira abertura de uma instalação nova, oferece arrumar a área de trabalho por tipo.
+        /// Quem já tem pastas ou regras (veio de uma versão anterior) não é incomodado. Responder "Agora não" não muda nada.
+        /// </summary>
+        private void OfferOrganize()
+        {
+            if (Cfg.OrganizeAsked) return;
+            if (Cfg.Folders.Count > 0 || Cfg.Rules.Count > 0 || Cfg.Floats.Count > 0)
+            {
+                Cfg.OrganizeAsked = true;
+                ConfigStore.Save();
+                return;
+            }
+
+            var files = new List<string>();
+            try
+            {
+                files.AddRange(Directory.EnumerateFiles(DesktopFiles.UserDesktop)
+                    .Where(f => AutoRules.Check(f) != AutoRules.Eligibility.Never && !AutoRules.IsTemporary(f)
+                                && !DesktopFiles.IsShortNameDuplicate(f)));
+            }
+            catch { }
+            var found = OrganizeOffer.Scan(files);
+
+            Cfg.OrganizeAsked = true; // pergunta uma vez só, qualquer que seja a resposta
+            ConfigStore.Save();
+            if (found.Count == 0) return;
+
+            var chosen = OrganizeOffer.Ask(found);
+            if (chosen == null) return; // "Agora não": tudo como está
+
+            foreach (var id in chosen) AddPresetRule(id);
+            int moved = ApplyRulesNow();
+            RefreshSendTo();
+            Notify();
+            MessageBox.Show(
+                moved == 0 ? "Nenhum arquivo foi movido."
+                           : $"Pronto! {moved} {(moved == 1 ? "item foi organizado" : "itens foram organizados")} em {chosen.Count} {(chosen.Count == 1 ? "pasta" : "pastas")}.\n\nPara desfazer, exclua a pasta ou remova o item dela: tudo volta para a área de trabalho.",
+                "Pastel", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
             SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
             _watcher?.Dispose();
+            _ruleWatcher?.Dispose();
+            _mirror?.Dispose();
             _tray?.Dispose();
             ConfigStore.Save();
             base.OnExit(e);
@@ -176,7 +231,13 @@ namespace Pastel
 
             var pop = new FolderPopupWindow(f, anchor);
             _popup = pop;
-            pop.Closed += (_, _) => { if (ReferenceEquals(_popup, pop)) _popup = null; }; // o antigo pode fechar depois do novo abrir
+            GroupShortcut.EditingId = f.Id;
+            pop.Closed += (_, _) =>
+            {
+                if (ReferenceEquals(_popup, pop)) _popup = null;
+                if (GroupShortcut.EditingId == f.Id) GroupShortcut.EditingId = null;
+                if (Cfg.Folders.Contains(f)) GroupShortcut.SyncHidden(f); // ficou vazia com o balão aberto: some agora
+            }; // o antigo pode fechar depois do novo abrir
             pop.Show();
         }
 
@@ -211,8 +272,12 @@ namespace Pastel
         {
             var name = Prompt.Ask("Nova pasta", "Pasta");
             if (name == null) return null; // cancelou
+            return CreateGroup(string.IsNullOrWhiteSpace(name) ? "Pasta" : name.Trim());
+        }
 
-            var f = new FolderModel { Name = string.IsNullOrWhiteSpace(name) ? "Pasta" : name.Trim() };
+        private FolderModel CreateGroup(string name)
+        {
+            var f = new FolderModel { Name = name, Fresh = true };
             Cfg.Folders.Add(f);
             GroupShortcut.Ensure(f, force: true);
             f.Name = Path.GetFileNameWithoutExtension(f.LnkPath ?? f.Name);
@@ -245,11 +310,239 @@ namespace Pastel
             Notify();
         }
 
+        /// <summary>Liga/desliga "Ocultar pastas vazias": desligar reexibe todas.</summary>
+        public void SetHideEmptyFolders(bool on)
+        {
+            Cfg.HideEmptyFolders = on;
+            foreach (var f in Cfg.Folders) GroupShortcut.SyncHidden(f);
+            ConfigStore.Save();
+        }
+
         private static void RemoveGroupData(FolderModel f)
         {
             foreach (var item in f.Items) DesktopFiles.Restore(item);
             GroupShortcut.Delete(f);
             Cfg.Folders.Remove(f);
+            // As regras que apontavam para ela ficam: se casarem com algo, a pasta é recriada (ver RecreateTarget).
+        }
+
+        // ---------- pastas espelhadas (mostram um diretório real) ----------
+
+        /// <summary>Cria uma pasta que espelha um diretório (ex.: Downloads). Nada sai de lá.</summary>
+        public FolderModel? NewMirrorGroup()
+        {
+            using var dlg = new System.Windows.Forms.FolderBrowserDialog
+            {
+                Description = "Escolha a pasta que o Pastel vai mostrar. Os arquivos continuam onde estão.",
+                UseDescriptionForTitle = true,
+                ShowNewFolderButton = false
+            };
+            if (dlg.ShowDialog() != System.Windows.Forms.DialogResult.OK || !Directory.Exists(dlg.SelectedPath)) return null;
+
+            string source = dlg.SelectedPath;
+            string suggested = new DirectoryInfo(source).Name;
+            var name = Prompt.Ask("Nova pasta espelhada", string.IsNullOrWhiteSpace(suggested) ? "Pasta" : suggested);
+            if (name == null) return null;
+
+            var f = new FolderModel { Name = string.IsNullOrWhiteSpace(name) ? "Pasta" : name.Trim(), SourcePath = source };
+            FolderMirror.Refresh(f);
+            Cfg.Folders.Add(f);
+            GroupShortcut.Ensure(f, force: true);
+            f.Name = Path.GetFileNameWithoutExtension(f.LnkPath ?? f.Name);
+            ConfigStore.Save();
+            _mirror?.Sync(Cfg.Folders);
+            RefreshSendTo();
+            Notify();
+            return f;
+        }
+
+        private void StartMirrors()
+        {
+            _mirror = new FolderMirror(id => Dispatcher.BeginInvoke(new Action(() => MirrorDirty(id))));
+            _mirror.Sync(Cfg.Folders);
+            _mirrorTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(600) };
+            _mirrorTimer.Tick += (_, _) =>
+            {
+                _mirrorTimer.Stop();
+                var ids = _mirrorDirty.ToList();
+                _mirrorDirty.Clear();
+                foreach (var id in ids)
+                {
+                    var f = Cfg.Folders.FirstOrDefault(x => x.Id == id);
+                    if (f != null && FolderMirror.Refresh(f)) Changed(f);
+                }
+            };
+        }
+
+        private void MirrorDirty(string id)
+        {
+            _mirrorDirty.Add(id);
+            _mirrorTimer?.Stop();
+            _mirrorTimer?.Start();
+        }
+
+        // ---------- regras automáticas (área de trabalho → pasta ou flutuante) ----------
+
+        public AutoRule NewRule()
+        {
+            var first = Cfg.Folders.FirstOrDefault(f => !f.IsMirror)?.Id ?? Cfg.Floats.FirstOrDefault()?.Id ?? "";
+            var r = new AutoRule { Name = "Regra " + (Cfg.Rules.Count + 1), Enabled = false, TargetId = first };
+            r.TargetName = FindOwner(first)?.Name ?? "";
+            Cfg.Rules.Add(r);
+            ConfigStore.Save();
+            return r;
+        }
+
+        /// <summary>
+        /// Adiciona uma regra pronta por tipo, já ligada. O destino é uma pasta com o nome da categoria
+        /// (usa a que já existir com esse nome, senão cria uma). Não mexe nos arquivos que já estão na área de trabalho.
+        /// </summary>
+        public AutoRule? AddPresetRule(string categoryId)
+        {
+            var cat = RuleCatalog.Find(categoryId);
+            if (cat == null || Cfg.Rules.Any(r => r.Category == categoryId)) return null;
+
+            // A pasta só nasce quando chegar o primeiro arquivo desse tipo (ver RecreateTarget): adicionar uma regra
+            // não enche a área de trabalho de pastas vazias. Se já existe uma pasta com o nome do tipo, é ela.
+            var target = Cfg.Folders.FirstOrDefault(f => !f.IsMirror && string.Equals(f.Name, cat.Name, StringComparison.CurrentCultureIgnoreCase));
+            var rule = new AutoRule { Name = cat.Name, Category = cat.Id, Enabled = true, TargetId = target?.Id ?? "", TargetName = target?.Name ?? cat.Name };
+            Cfg.Rules.Add(rule);
+            // Regras do usuário primeiro (mais específicas); as prontas depois, na ordem do catálogo.
+            Cfg.Rules = Cfg.Rules.Where(r => r.Category.Length == 0)
+                .Concat(Cfg.Rules.Where(r => r.Category.Length > 0)
+                    .OrderBy(r => Array.FindIndex(RuleCatalog.All, c => c.Id == r.Category))).ToList();
+            ConfigStore.Save();
+            return rule;
+        }
+
+        /// <summary>Remove uma regra pronta. A pasta de destino e o que está dentro dela ficam como estão.</summary>
+        public void RemovePresetRule(string categoryId)
+        {
+            if (Cfg.Rules.RemoveAll(r => r.Category == categoryId) > 0) ConfigStore.Save();
+        }
+
+        public void RuleChanged() => ConfigStore.Save();
+
+        public void DeleteRule(AutoRule r)
+        {
+            Cfg.Rules.Remove(r);
+            ConfigStore.Save();
+        }
+
+        /// <summary>Destinos possíveis de uma regra: pastas comuns e flutuantes (espelhadas não recebem arquivos).</summary>
+        public IEnumerable<IItemOwner> RuleTargets() =>
+            Cfg.Folders.Where(f => !f.IsMirror).Cast<IItemOwner>().Concat(Cfg.Floats);
+
+        /// <summary>
+        /// O destino da regra ainda não existe (regra recém-adicionada) ou foi excluído (a regra continua valendo): cria a pasta
+        /// com o nome guardado, ou reaproveita uma pasta comum com esse nome. Só acontece quando um arquivo realmente casa.
+        /// </summary>
+        private IItemOwner? RecreateTarget(AutoRule rule)
+        {
+            string name = rule.TargetName;
+            if (string.IsNullOrWhiteSpace(name)) name = RuleCatalog.Find(rule.Category)?.Name ?? rule.Name;
+            if (string.IsNullOrWhiteSpace(name)) return null;
+
+            var folder = Cfg.Folders.FirstOrDefault(f => !f.IsMirror && string.Equals(f.Name, name, StringComparison.CurrentCultureIgnoreCase))
+                         ?? CreateGroup(name.Trim());
+            rule.TargetId = folder.Id;
+            rule.TargetName = folder.Name;
+            ConfigStore.Save();
+            RefreshSendTo();
+            return folder;
+        }
+
+        private IItemOwner? FindOwner(string id) => RuleTargets().FirstOrDefault(o => o.Id == id);
+
+        private void StartRuleWatcher()
+        {
+            try
+            {
+                _ruleWatcher = new FileSystemWatcher(DesktopFiles.UserDesktop)
+                {
+                    NotifyFilter = NotifyFilters.FileName,
+                    IncludeSubdirectories = false,
+                    EnableRaisingEvents = true
+                };
+            }
+            catch { return; }
+
+            _ruleTimer = new DispatcherTimer { Interval = AutoRules.Settle + TimeSpan.FromMilliseconds(500) };
+            _ruleTimer.Tick += (_, _) =>
+            {
+                _ruleTimer.Stop();
+                var batch = _ruleCandidates.ToList();
+                _ruleCandidates.Clear();
+                var unsettled = RunRules(batch, out _);
+                // Cópia ou download ainda rolando: tenta de novo depois.
+                if (unsettled.Count > 0) { foreach (var p in unsettled) _ruleCandidates.Add(p); _ruleTimer.Start(); }
+            };
+
+            void Seen(string path) => Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (!Cfg.Rules.Any(r => r.Enabled)) return;
+                _ruleCandidates.Add(path);
+                _ruleTimer.Stop();
+                _ruleTimer.Start();
+            }));
+            _ruleWatcher.Created += (_, e) => Seen(e.FullPath);
+            _ruleWatcher.Renamed += (_, e) => Seen(e.FullPath);
+        }
+
+        /// <summary>Aplica as regras agora aos arquivos que já estão soltos na área de trabalho. Retorna quantos foram movidos.</summary>
+        public int ApplyRulesNow(AutoRule? only = null)
+        {
+            var all = new List<string>();
+            try { all.AddRange(Directory.EnumerateFiles(DesktopFiles.UserDesktop)); } catch { }
+            RunRules(all, out int moved, ignoreSettle: true, only: only);
+            return moved;
+        }
+
+        /// <summary>Move para o destino de cada regra os arquivos que casam. Devolve os que ainda "assentam".</summary>
+        private List<string> RunRules(IEnumerable<string> paths, out int moved, bool ignoreSettle = false, AutoRule? only = null)
+        {
+            moved = 0;
+            var unsettled = new List<string>();
+            var touched = new HashSet<IItemOwner>();
+            var rules = Cfg.Rules.Where(r => r.Enabled && (only == null || r == only)).ToList();
+
+            foreach (var path in paths)
+            {
+                if (!File.Exists(path)) continue;
+                bool returned;
+                lock (DesktopFiles.Returned) returned = DesktopFiles.Returned.Contains(path);
+                if (returned && !ignoreSettle) continue; // o usuário acabou de tirar da pasta
+                var rule = AutoRules.Find(rules, path);
+                if (rule == null) continue;
+                var state = AutoRules.Check(path);
+                if (state == AutoRules.Eligibility.Never || (ignoreSettle && AutoRules.IsTemporary(path))) continue;
+                if (DesktopFiles.IsShortNameDuplicate(path)) continue; // cópia com nome curto deixada por versões antigas
+                if (state == AutoRules.Eligibility.NotYet && !ignoreSettle) { unsettled.Add(path); continue; }
+
+                // Só agora, com um arquivo realmente a mover, a pasta excluída é recriada.
+                var target = FindOwner(rule.TargetId) ?? RecreateTarget(rule);
+                if (target == null) continue;
+                if (rule.TargetName != target.Name) { rule.TargetName = target.Name; ConfigStore.Save(); } // acompanha renomeações
+
+                string name = Path.GetFileNameWithoutExtension(path) is { Length: > 0 } n ? n : Path.GetFileName(path);
+                if (!DesktopFiles.IsShortcutFile(path))
+                {
+                    // Arquivo ou programa que não é atalho fica na área de trabalho; a pasta recebe um atalho, uma vez só.
+                    if (target.Items.Any(i => string.Equals(i.SourcePath, path, StringComparison.OrdinalIgnoreCase))) continue;
+                    var link = DesktopFiles.CreateLink(path, target.Id);
+                    if (link == null) continue;
+                    target.Items.Add(new ShortcutItem { Name = name, Path = link, SourcePath = path });
+                }
+                else
+                {
+                    if (!DesktopFiles.TryTake(path, target.Id, out var movedPath)) continue;
+                    target.Items.Add(new ShortcutItem { Name = name, Path = movedPath, OriginalPath = path });
+                }
+                touched.Add(target);
+                moved++;
+            }
+            foreach (var o in touched) Changed(o);
+            return unsettled;
         }
 
         // ---------- flutuantes ----------
@@ -336,12 +629,15 @@ namespace Pastel
 
         public void AddPaths(IItemOwner owner, IEnumerable<string> paths)
         {
+            if (owner is FolderModel { IsMirror: true }) return; // pasta espelhada é só leitura
             bool changed = false;
-            foreach (var p in paths)
+            foreach (var raw in paths)
             {
-                if (string.IsNullOrWhiteSpace(p)) continue;
+                if (string.IsNullOrWhiteSpace(raw)) continue;
+                string p = DesktopFiles.ToLongPath(raw); // o Explorer pode entregar o nome curto (8.3)
                 var existing = owner.Items.FirstOrDefault(i => string.Equals(i.Path, p, StringComparison.OrdinalIgnoreCase) ||
-                                                               string.Equals(i.OriginalPath, p, StringComparison.OrdinalIgnoreCase));
+                                                               string.Equals(i.OriginalPath, p, StringComparison.OrdinalIgnoreCase) ||
+                                                               string.Equals(i.SourcePath, p, StringComparison.OrdinalIgnoreCase));
                 if (existing != null)
                 {
                     // Já estava aqui mas o atalho ainda está na área de trabalho: passa a ser gerenciado.
@@ -353,11 +649,17 @@ namespace Pastel
                 if (string.IsNullOrEmpty(name)) name = p;
 
                 // Atalho que estava na área de trabalho sai de lá (vai para a pasta gerenciada).
-                string? original = null;
+                // Arquivo, programa ou pasta (que não é atalho) não se move: a pasta ganha um atalho para ele.
+                string? original = null, source = null;
                 string path = p;
-                if (DesktopFiles.TryTake(p, owner.Id, out var moved)) { original = p; path = moved; }
+                if (!DesktopFiles.IsShortcutFile(p) && (File.Exists(p) || Directory.Exists(p)))
+                {
+                    var link = DesktopFiles.CreateLink(p, owner.Id);
+                    if (link != null) { path = link; source = p; }
+                }
+                else if (DesktopFiles.TryTake(p, owner.Id, out var moved)) { original = p; path = moved; }
 
-                owner.Items.Add(new ShortcutItem { Name = name, Path = path, OriginalPath = original });
+                owner.Items.Add(new ShortcutItem { Name = name, Path = path, OriginalPath = original, SourcePath = source });
                 changed = true;
             }
             if (changed) Changed(owner);
@@ -388,6 +690,9 @@ namespace Pastel
                     return;
                 }
                 t.Stop();
+                // Foi parar em algum lugar (em geral a área de trabalho): as regras não podem pegar de volta.
+                lock (DesktopFiles.Returned)
+                    DesktopFiles.Returned.Add(Path.Combine(DesktopFiles.UserDesktop, Path.GetFileName(item.Path)));
                 owner.Items.Remove(item);
                 Changed(owner);
             };
@@ -396,7 +701,9 @@ namespace Pastel
 
         public void RemoveItem(IItemOwner owner, ShortcutItem item)
         {
+            if (owner is FolderModel { IsMirror: true }) return; // não mexe nos arquivos do diretório de origem
             DesktopFiles.Restore(item); // devolve à área de trabalho, se veio de lá
+            if (item.SourcePath != null) try { File.Delete(item.Path); } catch { } // atalho criado pelo Pastel; o original não é tocado
             owner.Items.Remove(item);
             Changed(owner);
         }
@@ -437,13 +744,20 @@ namespace Pastel
         {
             foreach (var f in Cfg.Folders.ToList())
             {
-                if (f.LnkPath != null && !File.Exists(f.LnkPath))
+                if (f.LnkPath != null && !File.Exists(f.LnkPath) && !GroupShortcut.IsStashed(f))
                 {
                     var found = GroupShortcut.IsLegacyLnk(f.LnkPath) ? null : GroupShortcut.FindById(f.Id);
                     if (found == null) { RemoveGroupData(f); continue; } // o usuário apagou a pasta
                     f.LnkPath = found;
                 }
                 if (f.LnkPath != null) f.Name = Path.GetFileNameWithoutExtension(f.LnkPath);
+
+                if (f.IsMirror)
+                {
+                    // Pasta espelhada: os itens vêm do diretório, nada a "adotar" nem a devolver.
+                    GroupShortcut.Ensure(f, force: FolderMirror.Refresh(f));
+                    continue;
+                }
 
                 // Itens gerenciados cujo arquivo sumiu (movido por fora) saem da pasta;
                 // itens antigos que ficaram soltos na área de trabalho passam a ser gerenciados.
@@ -510,10 +824,11 @@ namespace Pastel
         private void RefreshSendTo()
         {
             if (!Cfg.SendToMenu) return;
-            string sig = string.Join("|", Cfg.Folders.Select(f => f.Id + f.Name)) + "#" + string.Join("|", Cfg.Floats.Select(f => f.Id + f.Name));
+            var targets = Cfg.Folders.Where(f => !f.IsMirror).ToList(); // espelhada não recebe arquivos
+            string sig = string.Join("|", targets.Select(f => f.Id + f.Name)) + "#" + string.Join("|", Cfg.Floats.Select(f => f.Id + f.Name));
             if (sig == _sendSig) return;
             _sendSig = sig;
-            ShellIntegration.RegisterSendTo(Cfg.Folders, Cfg.Floats);
+            ShellIntegration.RegisterSendTo(targets, Cfg.Floats);
         }
 
         public void SetSendToMenu(bool on)

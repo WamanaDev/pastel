@@ -37,7 +37,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="Bd" CornerRadius="8" Padding="13,6" Margin="2" Background="Transparent" Cursor="Hand">
+                        <Border x:Name="Bd" CornerRadius="8" Padding="10,6" Margin="2" Background="Transparent" Cursor="Hand">
                             <ContentPresenter x:Name="Cp" VerticalAlignment="Center" HorizontalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -61,7 +61,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd" CornerRadius="10" Padding="16,8" Background="{DynamicResource Brush.Violet}" Cursor="Hand">
+                        <Border x:Name="Bd" CornerRadius="17" Padding="16,7" Background="{DynamicResource Brush.Violet}" Cursor="Hand">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -80,6 +80,50 @@
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="Bd" CornerRadius="10" Padding="13,7" BorderThickness="1"
                                 BorderBrush="{DynamicResource Brush.CardBorder}" Background="Transparent" Cursor="Hand">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Brush.Hover}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Botão em forma de texto (Abrir, Ver apps, Remover…): sem borda, realça ao passar o mouse -->
+        <Style x:Key="LinkButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource Brush.Subtle}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Padding="7,5" CornerRadius="6" Background="Transparent" Cursor="Hand">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Brush.Hover}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="LinkAccent" TargetType="Button" BasedOn="{StaticResource LinkButton}">
+            <Setter Property="Foreground" Value="{DynamicResource Brush.VioletText}" />
+        </Style>
+        <Style x:Key="LinkDanger" TargetType="Button" BasedOn="{StaticResource LinkButton}">
+            <Setter Property="Foreground" Value="{DynamicResource Brush.Danger}" />
+        </Style>
+
+        <!-- Botão só com ícone/símbolo, sem borda (ex.: o "⋯" de cada regra) -->
+        <Style x:Key="IconButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource Brush.Text}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" CornerRadius="8" Width="32" Height="30" Background="Transparent" Cursor="Hand">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
